@@ -28,7 +28,7 @@ if (keystorePropertiesFile.exists()) {
 }
 
 android {
-  namespace 'net.liplum.mimir'
+  namespace 'net.liplum.mimir_trial'
   compileSdk flutter.compileSdkVersion
   ndkVersion flutter.ndkVersion
   compileSdkVersion 34
@@ -47,7 +47,7 @@ android {
   }
 
   defaultConfig {
-    applicationId "net.liplum.mimir"
+    applicationId "net.liplum.mimir_trial"
     minSdkVersion 23
     targetSdkVersion flutter.compileSdkVersion
     versionCode flutterVersionCode.toInteger()

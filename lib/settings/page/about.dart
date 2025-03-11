@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:mimir/design/widget/list_tile.dart';
+import 'package:flutter_svg/svg.dart';
 import 'package:mimir/r.dart';
 import 'package:rettulf/rettulf.dart';
 import 'package:mimir/utils/guard_launch.dart';
@@ -32,14 +32,6 @@ class _AboutSettingsPageState extends ConsumerState<AboutSettingsPage> {
           SliverList.list(
             children: [
               const VersionTile(),
-              DetailListTile(
-                title: i18n.about.icpLicense,
-                subtitle: R.icpLicense,
-                trailing: const Icon(Icons.open_in_browser),
-                onTap: () async {
-                  await guardLaunchUrlString(context, "https://beian.miit.gov.cn/");
-                },
-              ),
               ListTile(
                 title: i18n.about.termsOfService.text(),
                 trailing: const Icon(Icons.open_in_browser),
@@ -62,10 +54,10 @@ class _AboutSettingsPageState extends ConsumerState<AboutSettingsPage> {
                 },
               ),
               AboutListTile(
-                icon: Image.asset("assets/icon.png").sizedAll(32),
+                icon: SvgPicture.asset("assets/icon.svg").sizedAll(32),
                 applicationName: R.appNameL10n,
                 applicationVersion: R.meta.version.toString(),
-                applicationLegalese: "Copyright©️2024 Plum Technology Ltd. All Rights Reserved.",
+                applicationLegalese: "Copyright©️2024-2025 Plum Technology Ltd. All Rights Reserved.",
               ),
             ],
           ),

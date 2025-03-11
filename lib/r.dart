@@ -11,9 +11,8 @@ class R {
   static const scheme = "xiaoying";
   static const hiveStorageVersionCache = "2.7.0";
   static const hiveStorageVersionCore = "2.1.1";
-  static const appId = "life.mysit.SITLife";
-  static const appName = "SIT Life";
-  static const icpLicense = "沪ICP备2024077945号-6A";
+  static const appId = "net.liplum.mimir_trial";
+  static const appName = "Xiao Ying Trial";
 
   static String get appNameL10n => "appName".tr();
 
@@ -37,10 +36,6 @@ class R {
   static const Size minWindowSize = Size(300, 400);
 
   static const eduEmailDomain = "mail.sit.edu.cn";
-
-  static const iosAppId = "6468989112";
-  static const iosAppStoreUrl = "https://apps.apple.com/app/$iosAppId";
-  static const iosTimetableICalToCalendarShortcut = "https://www.icloud.com/shortcuts/98f1b96465c542dcbdac651a921e2459";
 
   static String formatEduEmail({required String username}) {
     return "$username@$eduEmailDomain";
