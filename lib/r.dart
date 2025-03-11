@@ -46,8 +46,6 @@ class R {
     return "$username@$eduEmailDomain";
   }
 
-  static late List<String> roomList;
-  static const enLocale = Locale('en');
   static const zhHansLocale = Locale.fromSubtags(languageCode: "zh", scriptCode: "Hans");
   static const defaultLocale = zhHansLocale;
   static const supportedLocales = [

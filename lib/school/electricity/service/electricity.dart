@@ -2,7 +2,6 @@ import 'dart:convert';
 
 import 'package:dio/dio.dart';
 import 'package:mimir/init.dart';
-import 'package:mimir/r.dart';
 import 'package:mimir/session/ywb.dart';
 import '../entity/balance.dart';
 
@@ -28,9 +27,5 @@ class ElectricityService {
     final data = jsonDecode(response.data as String) as List;
     final list = data.map((e) => ElectricityBalance.fromJson(e)).toList();
     return list.first;
-  }
-
-  List<String> getRoomNumberCandidates() {
-    return R.roomList;
   }
 }

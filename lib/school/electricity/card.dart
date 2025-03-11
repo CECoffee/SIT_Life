@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_platform_widgets/flutter_platform_widgets.dart' hide isCupertino;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:mimir/design/adaptive/editor.dart';
 import 'package:mimir/design/adaptive/multiplatform.dart';
 import 'package:mimir/design/widget/app.dart';
 import 'package:mimir/design/adaptive/dialog.dart';
@@ -21,7 +22,6 @@ import 'entity/balance.dart';
 import 'i18n.dart';
 import 'init.dart';
 import 'widget/card.dart';
-import 'widget/search.dart';
 
 class ElectricityBalanceAppCard extends ConsumerStatefulWidget {
   const ElectricityBalanceAppCard({super.key});
@@ -99,16 +99,7 @@ class _ElectricityBalanceAppCardState extends ConsumerState<ElectricityBalanceAp
       leftActions: [
         FilledButton.icon(
           onPressed: () async {
-            final $searchHistory = ValueNotifier(ElectricityBalanceInit.storage.searchHistory ?? const <String>[]);
-            $searchHistory.addListener(() {
-              ElectricityBalanceInit.storage.searchHistory = $searchHistory.value;
-            });
-            final room = await searchRoom(
-              ctx: context,
-              $searchHistory: $searchHistory,
-              roomList: ElectricityBalanceInit.service.getRoomNumberCandidates(),
-            );
-            $searchHistory.dispose();
+             final room =await Editor.showStringEditor(context, initial: selectedRoom ?? "");
             if (room == null) return;
             XElectricity.setSelectedRoom(room);
             await refresh(active: true);

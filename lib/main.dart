@@ -1,9 +1,6 @@
-import 'dart:convert';
-
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_inappwebview/flutter_inappwebview.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -77,8 +74,6 @@ void main() async {
   debugPrint("Last version: $lastVersion");
   await prefs.setLastVersion(currentVersion.toString());
 
-  R.roomList = await _loadRoomNumberList();
-
   // Initialize Hive
   if (!kIsWeb) {
     await HiveInit.initLocalStorage(
@@ -116,8 +111,3 @@ void main() async {
 
 final _yamlAssetsLoader = YamlAssetLoader();
 
-Future<List<String>> _loadRoomNumberList() async {
-  String jsonData = await rootBundle.loadString("assets/room_list.json");
-  List<dynamic> list = jsonDecode(jsonData);
-  return list.map((e) => e.toString()).toList();
-}
