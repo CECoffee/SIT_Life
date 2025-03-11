@@ -12,49 +12,21 @@ agreements:
       未经您的许可，我们不会向第三方披露、共享或提供您的个人信息。
       您可以根据我们的指引、访问、更正、删除您的信息或撤销您的相关授权。您可以通过查看《小应生活隐私政策》中的联系方式来与我们联系。
 
-      更多详情请阅读完整版的 [《小应生活隐私政策》](https://www.xiaoying.life/privacy-policy/20241118) 和 [《小应生活使用协议》](https://www.xiaoying.life/tos/20241118)。
+      更多详情请阅读完整版的 [《小应生活隐私政策》](https://www.xiaoying.life/privacy-policy) 和 [《小应生活使用协议》](https://www.xiaoying.life/tos)。
     accept: 同意并继续
     decline: 拒绝
     onDecline: 只有接受我们的隐私政策后，您才可享用 @:appName 的功能
   basic: |
-    我已阅读并同意 [《小应生活隐私政策》](https://www.xiaoying.life/privacy-policy/20241118) 和 [《小应生活使用协议》](https://www.xiaoying.life/tos/20241118)
+    我已阅读并同意 [《小应生活隐私政策》](https://www.xiaoying.life/privacy-policy) 和 [《小应生活使用协议》](https://www.xiaoying.life/tos)
   account: |
-    我已阅读并同意 [《小应生活隐私政策》](https://www.xiaoying.life/privacy-policy/20241118) 和 [《小应生活使用协议》](https://www.xiaoying.life/tos/20241118)
+    我已阅读并同意 [《小应生活隐私政策》](https://www.xiaoying.life/privacy-policy) 和 [《小应生活使用协议》](https://www.xiaoying.life/tos)
   acceptanceRequired:
     title: 需要同意协议
     desc: 在使用@:appName前，你必须同意我们的协议和政策
 mimir:
-  update:
-    title: 检查更新
-    onLatestTip: 你使用的是最新版本
-    newVersionAvailable: 有新版本可用！
-    notNow: 再等等
-    skipThisVersionForWhile: 暂时跳过此版本
-    openAppStore: 打开 App Store
-  forum:
-    navigation: 社区
-    title: 小应社区
-  bulletin:
-    title: 布告栏
   school:
     title: 学校
     10259: 上海应用技术大学
-  auth:
-    signInTitle: 登录@:accountName
-    authMethodsAvailable: 暂时无法验证你在该学校的核验在校生身份
-    authMethodUnimpl: 这个方式在当前App版本不受支持，请更新到最新版.
-    schoolId:
-      name: 学号
-      disclaimer: |
-        您即将登录@:accountName，仅用于@:appName App的各项拓展服务。
-
-        @:accountName与您学校提供的账号无关，且不互通。如需使用课程表，考试、分数查询等基础功能，请[点击此处](/settings/oa)。
-
-        我们非常重视您的隐私安全。您的学号与密码仅用于**验证在校生身份**，服务器不会存储。
-    eduEmail:
-      name: 教育邮箱
-    phoneNumber:
-      name: 手机号
 timetable:
   navigation: 课程表
   jump: 跳转
@@ -104,32 +76,6 @@ timetable:
       courseOverlaps:
         title: 发现课程时间冲突
         desc: 你可以隐藏其中一个课程以避免冲突
-  patch:
-    title: 调课
-    prefabs: 预制
-    defaultName: 新的调课组合
-    unpack: 拆散
-    noPatches: 没有调课
-    patchSetName: 调课组合名称
-    addPrefab: 添加预制
-    dateOutOfRangeTip: 一个或多个日期不在当前课程表所处学期的时间范围内
-    removeDay: "删除 {day} 的课"
-    swapDays: "交换 {a} 和 {b} 的课"
-    copyDay: "{target} 上与 {source} 相同的课"
-    moveDay: "{target} 改为上 {source} 的课"
-    type:
-      moveDay: 移动某天
-      removeDay: 删除某天
-      copyDay: 复制某天
-      swapDays: 交换某天
-    builtin:
-      sitVacationShift2024: 2024年上应大放假调休
-    moveSource: 原本要上课的日子
-    moveTarget: 修改后要上课的日子
-    copySource: 上课的日子
-    copyTarget: 修改后要上相同课的日子
-    swappedDay: 要交换的其中一天
-    removedDay: 要删除的日子
   import:
     title: 导入课程表
     import: 导入
@@ -151,40 +97,6 @@ timetable:
     formatError:
       title: 格式错误
       desc: 所选文件无法作为课程表导入，请选择一个课程表文件。
-    alreadyLatest:
-      title: 已经是最新版本
-      desc: 因为已经是最新版本，所以不需要更新此课程表。
-    updateAvailable:
-      title: 有可用的更新
-      desc: 课程表最近已更新，是否要覆盖您的更改并与最新版本同步？
-  export:
-    title: 导出选项
-    export: 导出
-    iOSGetShortcutAction: 获取快捷指令将事项添加到日历
-    lessonMode:
-      title: 课程模式
-      merged: 完整
-      mergedTip: 同属一节课的几个部分会被合并成为一个日程
-      separate: 分离
-      separateTip: 同属一节课的几个部分会被分离为多个日程
-    enableAlarm:
-      title: 启用提醒
-      desc: 在课前添加提醒
-    alarmMode:
-      title: 提醒模式
-      sound: 声音
-      display: 显示
-    alarmDuration: 提醒时长
-    alarmBeforeClassBegins:
-      title: 在上课前提醒
-      desc: "提前 {duration}"
-  screenshot:
-    screenshot: 截图
-    take: 截图
-    title: 截图
-    enableBackground:
-      title: 显示壁纸
-      desc: 在截图中显示课程表壁纸
   displayMode:
     daily: 日
     weekly: 周
@@ -208,92 +120,6 @@ timetable:
     termTip: 不可思议，这个学期你都在放假！
     findNearestWeekWithClass: 找到有课的一周
     findNearestDayWithClass: 找到有课的一天
-  p13n:
-    title: 配色方案
-    palette:
-      title: 配色方案
-      name: 名称
-      tab:
-        custom: 自定义
-        builtin: 内置
-      namePlaceholder: 配色方案的名称
-      author: 作者
-      authorPlaceholder: 你的姓名，电子邮箱，或 url
-      color: 颜色
-      details: 详情
-      newPaletteName: 新的配色方案
-      deleteRequest: 确定删除？
-      deleteRequestDesc: 推荐先保存二维码备份再删除
-      addColor: 添加一种配色
-      appSettings: 应用设置
-      generate: 生成
-      create: 创作
-      builtin:
-        classic:
-          name: 经典
-        americano:
-          name: 美式复古
-        candy:
-          name: 糖果幻境
-        sprint:
-          name: 兰时
-        summary:
-          name: 时夏
-        fall:
-          name: 萧辰
-        winter:
-          name: 北陆
-        thicket:
-          name: 小森林
-        creeksideBreeze:
-          name: 溪畔听风
-    cellStyle:
-      title: 单元格风格
-      showTeachers:
-        title: 教师
-        desc: 在单元格内显示教师
-      grayOut:
-        title: 上过的课程变灰
-        desc: 现在之前的所有课程
-      harmonize:
-        title: 与主题色相协调
-        desc: 将单元格颜色与主题色混合
-      alpha: 单元格 alpha 通道
-    background:
-      title: 壁纸
-      opacity: 背景不透明度
-      pickTip: 选择你喜欢的图片
-      selectedImage: 选择的图片
-      imageURL: 图片 URL
-      invalidURL: 无效的 URL
-      invalidURLDesc: 请输入以 http 或 https 开头的 URL
-      repeat:
-        title: 重复图像
-        desc: 重复图像作为填充壁纸的图案
-      antialias:
-        title: 抗锯齿
-        desc: 如果图像像素较低，请关闭此功能
-      immersive:
-        title: 沉浸式
-        desc: 将图像向全屏展开
-      generatePalette: 生成配色方案
-    livePreview:
-      0:
-        name: 上过的
-        place: 体育馆
-        teachers: 李老师
-      1:
-        name: 上过的
-        place: 教室
-        teachers: 王老师
-      2:
-        name: 今天的
-        place: 活动中心
-        teachers: 张老师
-      3:
-        name: 明天的
-        place: 实验室
-        teachers: 刘老师
   settings:
     autoUseImported:
       title: 自动使用新课程表
@@ -301,21 +127,12 @@ timetable:
     showTimetableNavigation:
       title: '显示 "课程表" 导航'
       desc: '在底部导航栏上显示 "课程表"'
-    palette:
-      title: 配色方案
-      desc: 自定义课程表的颜色
     cellStyle:
       title: 单元格风格
       desc: 课程单元格如何显示
-    background:
-      title: 壁纸
-      desc: 课程表的背景
     quickLookLessonOnTap:
       title: 点击快速查看一节课
       desc: 在周课程表中长按查看完整课程
-    autoSyncTimetable:
-      title: 自动同步课程表
-      desc: 自动检查你使用的课程表可否更新
 school:
   navigation: 学校
   semester:
@@ -351,10 +168,6 @@ school:
     integratedPractice: 综合实践
     practicalInstruction: 实践教学
   settings:
-    class2nd:
-      autoRefresh:
-        title: 第二课堂分自动刷新
-        desc: 启动时刷新第二课堂分
     examResult:
       showResultPreview:
         title: 显示考试成绩预览
@@ -367,102 +180,6 @@ school:
       autoRefresh:
         title: 消费记录自动刷新
         desc: 启动时刷新消费记录
-me:
-  navigation: 个人
-class2nd:
-  title: 第二课堂
-  activity: 活动
-  attended:
-    title: 已参与
-    withdrawApplicationAction: 撤销
-    withdrawApplication:
-      title: 撤销申请
-      desc: 确定撤销这个活动申请？
-  refreshSuccessTip: 第二课堂分刷新成功
-  refreshFailedTip: 第二课堂分刷新失败
-  noActivities: 没有活动
-  noAttendedActivities: 没有参加过的活动
-  viewDetails: 查看详情
-  apply:
-    btn: 申请
-    replyTip: 校方回复
-    applyRequest: 申请
-    applyRequestDesc: 确定申请这个活动吗？
-    applySuccessTip: 申请活动成功
-    applyFailureTip: 申请活动失败
-  info:
-    activityId: 活动编号
-    applicationId: 申请编号
-    activityOf: "活动 #{}"
-    applicationOf: "申请 #{}"
-    name: 活动名称
-    tags: 标签
-    category: 活动类别
-    scoreType: 加分类型
-    honestyPoints: 诚信分
-    totalPoints: 总分
-    applicationTime: 申请时间
-    status: 状态
-    contactInfo: 联系方式
-    duration: 活动时长
-    location: 活动地点
-    organizer: 主办方
-    principal: 负责人
-    signInTime: 签到时间
-    signOutTime: 签退时间
-    startTime: 开始时间
-    undertaker: 承办方
-  activityCat:
-    all: 全部
-    lecture: 讲座报告
-    thematicEdu: 主题教育
-    creation: 创新创业创意
-    schoolCultureActivity: 校园文化
-    schoolCivilization: 校园文明
-    practice: 社会实践
-    voluntary: 志愿公益
-    onlineSafetyEdu: 安全教育网络教学
-    conference: 会议
-    schoolCultureCompetition: 校园文化竞赛
-    paperAndPatent: 论文专利
-    unknown: 未知
-  scoreType:
-    all: 全部
-    thematicReport:
-      full: 主题报告
-      short: 讲座
-    creation:
-      full: 创新创业创意
-      short: 三创
-    schoolCulture:
-      full: 校园文化
-      short: 文化
-    practice:
-      full: 社会实践
-      short: 实践
-    voluntary:
-      full: 志愿公益
-      short: 志愿
-    schoolSafetyCivilization:
-      full: 校园安全文明
-      short: 文明
-  applicationStatus:
-    unknown: 未知
-    approved: 通过
-    rejected: 未通过
-    withdrawn: 已撤销
-    activityCancelled: 活动取消
-    reviewing: 审核中
-  applicationResponse:
-    successfulCheck: 检查成功
-    incompleteApplicantInfo: 你的个人信息不全，请补全你的信息
-    alreadyApplied: 你已申请过该活动
-    applicationReachLimitToday: 你今天的申请次数已达上限
-    activityReachParticipantLimit: 该活动的申请人数已达上限
-    activityExpired: 该活动已过期并停止接受申请
-    applicantOccupiedWithinActivity: 你已申请过该时间段的其他活动
-    applicantNotPermitted: 你不能申请该活动
-    applicantNotIncluding: 你不属于该活动的可申请人员范围内
 ywb:
   title: 应网办
   info: |
@@ -501,9 +218,6 @@ credentials:
       这可能是因为你在 @:appName 之外更改了 OA 密码。
       请在设置中更新你保存的密码。
     goSettings: 前往设置
-  email:
-    eduEmail: 教育邮箱
-    emailAddress: 邮箱地址
   error:
     accountPassword: 你的账号或密码不正确
     captcha: 你的验证码不正确
@@ -512,10 +226,6 @@ credentials:
     oa-frozen: 你的 OA 账号处于冻结状态，请稍后再试
     oa-locked: 你的 OA 账号处于锁定状态，请联系管理员
     oa-incompleteUserInfo: 你的 OA 账号用户信息不完整，请访问 https://myportal.sit.edu.cn 进行完善
-easyconnect:
-  launchBtn: 启动 EasyConnect
-  launchFailed: 启动失败
-  launchFailedDesc: 无法启动 EasyConnect，请确定你是否安装，或者立即下载？
 electricity:
   title: 电费余额
   balance: 可用余额
@@ -527,38 +237,6 @@ electricity:
   emptyHistoryTip: 无搜索历史
   noMatchedRoomNumbers: 没有匹配的房间号
   lastUpdateTime: "上次更新：{}"
-eduEmail:
-  title: 教育邮箱
-  action:
-    open: 打开
-    login: 登录
-    inbox: 收件箱
-    outbox: 发件箱
-  login:
-    title: 登录教育邮箱
-    addressHint: 学号/工号
-    passwordHint: 你的邮箱密码
-    invalidEmailAddressFormatTip: 无效的邮箱地址格式
-    disclaimer: |
-      您即将登录由上海应用技术大学（简称"学校"）提供的教育邮箱。
-      初始密码一般为您的OA账户的初始密码，具体详情请关注[OA公告](/oa/announcement)。
-
-      如果您是第一次使用教育邮箱，请先在PC端前往官网 http://stu.mail.sit.edu.cn 进行激活。
-
-      我们非常重视您的隐私安全。您的邮箱与密码仅用于提交给教育邮箱服务器进行身份验证，并仅存储在本地。
-    freshmanTip: |
-      学校可能尚未为您分配教育邮箱。
-      一般会在新生入学后的3个月内完成，具体详情请关注[OA公告](/oa/announcement)。
-  info:
-    emailAddress: 邮箱地址
-  inbox:
-    title: 收件箱
-  outbox:
-    title: 发件箱
-  noContent: 无内容
-  noSubject: 无主题
-  pluralSenderTailing: 等
-  text: 正文
 examResult:
   title: 考试成绩
   check: 查询
@@ -649,58 +327,6 @@ expenseRecords:
     topUp: 充值
     subsidy: 补贴
     other: 杂项
-homepage:
-  campusNetworkConnected: 已连接校园网
-  campusNetworkUnconnected: 未连接校园网
-network:
-  error: 网络错误
-  ipAddress: IP 地址
-  connectionTimeoutError: 网络连接超时
-  connectionTimeoutErrorDesc: "此功能需要访问校园网。注意: 在学校服务器崩溃或停机维护时, 也可能会出现这样的情况。"
-  openToolBtn: 打开网络工具
-  noAccessTip: 无法连接到网络，请检查你设备的网络设置后再试。
-networkTool:
-  title: 网络工具
-  subtitle: 测试与学校服务器的连接
-  connecting: 检查中
-  openWifiSettingsBtn: 打开 Wi-Fi 设置
-  openInAppProxySettingsBtn: 打开应用内代理设置
-  campusNetworkConnected: 已连接到校园网
-  campusNetworkNotConnected: 未连接校园网
-  schoolServerAvailable: |
-    ## <center>可以访问学校服务器</center>
-    你可以登录 OA，查看 [OA 公告](/oa/announcement)，以及访问其他需要学校服务器的服务。
-  schoolServerUnavailable: |
-    ## <center>无法访问学校服务器</center>
-    你无法登录 OA，也无法访问任何需要学校服务器的服务。
-  studentRegAvailable: |
-    ## <center>可以访问教务系统</center>
-    你可以从教务系统中导入课程表，并查看[考试安排](/exam/arrangement)和[考试成绩](/exam/result)（包括[绩点](/exam/result/ug/gpa)）
-  studentRegUnavailable: |
-    ## <center>无法访问教务系统</center>
-    你无法从教务系统中导入课程表，唯一的导入方法是从你的设备上的文件中加载。
-
-    你的考试安排和考试成绩（包括绩点）无法加载和及时更新，但如果你已经加载过一次，则仍可查看。
-  ywbAvailable: |
-    ## <center>可以访问应网办</center>
-    你可以查看[应网办的服务](/ywb)并提交申请。
-  ywbUnavailable: |
-    ## <center>无法访问应网办</center>
-  studentRegTroubleshoot: |
-    ## <center>疑难解答</center>
-
-    1. 尝试连接学校的Wi-Fi: "i-SIT","i-SIT-1x" 或 "eduroam"。
-
-    2. 尝试使用"EasyConnect" VPN 连接校园网。
-
-    3. 尝试通过自行搭建的代理服务器使用 HTTP 代理连接校园网。
-
-    如果以上都不起作用, 可能因为是学校服务器停机维护或崩溃，请一段时间后重试。
-
-    夜间，学校服务器可能会暂时关闭，因此请等到工作日早上再试。
-  studentRegUnavailableButCampusNetworkConnected: |
-    已经连接至校园网，但仍然无法访问学校服务器。
-    可能因为是学校服务器停机维护或崩溃，请一段时间后重试。
 auth:
   signIn: 登录
   signUp: 注册
@@ -739,60 +365,6 @@ oa:
       请查看《新生入学须知》以了解初始密码。
 
       迎新系统不与其他系统共通（如课程表功能），在您入学后，请使用学校为您分配的学号重新登录 EasyConnect 和 @:appName。
-library:
-  title: 图书馆
-  hotPost: 热搜
-  readerId: 读者证号
-  noBooks: 没有图书
-  collectionStatus: 馆藏状态
-  action:
-    searchBooks: 搜索图书
-    login: 登录
-    borrowing: 借阅
-  login:
-    title: 登录图书馆
-    readerIdHint: 你的学号
-    passwordHint: 初始密码为 888888
-    failedWarn:
-      title: 登录失败
-      desc: 请检查密码
-  search:
-    searchHistory: 搜索历史
-    trending: 近期流行
-    mostPopular: 最热门
-  borrowing:
-    title: 你的借阅
-    history: 历史
-    renew: 续借
-    noBorrowing: 你没有借阅中的书籍
-  history:
-    title: 历史
-    operation:
-      borrowing: 借书
-      returning: 还书
-    noHistory: 你没有借阅记录
-  searchMethod:
-    any: 任意
-    title: 标题
-    author: 作者
-    isbn: ISBN
-    publisher: 出版社
-    callNumber: 索书号
-    primaryTitle: 正题
-    subject: 主题
-    $class: 分类
-    bookId: 图书号
-    orderNumber: 订购号
-  info:
-    title: 标题
-    author: 作者
-    isbn: ISBN
-    publisher: 出版社
-    publishDate: 出版日期
-    callNumber: 索书号
-    bookId: 图书号
-    barcode: 条形码
-    availableCollection: "{available} 在馆 / {collection} 馆藏"
 settings:
   title: 设置
   themeColor: 主题色
@@ -800,30 +372,12 @@ settings:
   loginTest:
     title: 测试登录
     desc: 尝试使用当前的登录凭据登录
-  dev:
-    title: 开发者选项
-    activateTip: 开发者模式已激活
-    devMode:
-      title: 开发者模式
-    demoMode:
-      title: 演示模式
-    localStorage:
-      title: 本地存储
-      desc: 管理在此设备上存储的数据
-      selectBoxTip: 请先选择一个盒子。
-      clearBoxDesc: 确定清空这个盒子里的数据吗？
-      deleteItemDesc: 确定删除这个键值对吗？
-      emptyValueDesc: 确定将这个键值设 null 为对吗？
-    reload:
-      title: 重新加载
-      desc: 重新加载所有模块
   clearCache:
     title: 清空缓存
     desc: 清空使用过程中产生的离线缓存和 Cookies
     request: 你下次需要连接校园网才能重新加载它们。
   themeMode:
     title: 亮度
-  language: 语言
   wipeData:
     title: 擦除数据并登出
     desc: 擦除所有数据并登出当前 OA 账号
@@ -832,11 +386,9 @@ settings:
   about:
     title: 关于
     version: 版本
-    icpLicense: ICP 备案号
     termsOfService: 服务条款
     privacyPolicy: 隐私政策
     marketingWebsite: 官网
-    checkUpdate: 检查更新
 oaAnnounce:
   title: OA 公告
   noOaAnnouncementsTip: 学校没有 OA 公告
@@ -862,8 +414,6 @@ oaAnnounce:
     download: 文件下载专区
     training: 培养信息
     academicReport: 学术报告
-yellowPages:
-  title: 学校黄页
 freshman:
   title: 迎新系统
 greeting:
@@ -871,13 +421,6 @@ greeting:
   headerB:
     one: 第 1 天
     other: "第 {} 天"
-intent:
-  qrCode:
-    noQrCodeRecognizedTip: 未识别到二维码
-    invalidFormatTip: 无法识别的二维码，这可能是来自旧版 @:appName 的过期二维码。
-    hint: 请启动 @:appName，然后切换至 个人{me}，再点击右上角的 扫一扫{scan}。
-  file:
-    unknownFileFormat: 未知文件格式
 404:
   title: 找不到页面
   subtitle: 未找到请求的页面
@@ -922,62 +465,6 @@ OaUserType:
   freshman: 新生
   worker: 职工
   other: 其他
-game:
-  navigation: 游戏
-  newGame: 新游戏
-  continueGame: 继续游戏
-  gameMode: 游戏模式
-  tryAgain: 再试一次
-  youWin: 你赢了！
-  gameOver: 游戏结束
-  changeGameModeRequest: 切换游戏模式会同时删除你当前的存档
-  changeGameModeAction: "切换至 {}"
-  loadGame: 加载战局
-  loadGameFromQrCode: "从二维码中加载游戏 {} 的战局"
-  noGameRecords: 没有游戏记录
-  settings:
-    enableHapticFeedback:
-      title: 开启触觉反馈
-      desc: 部分操作时轻微震动设备
-    showGameNavigation:
-      title: '显示 "游戏" 导航'
-      desc: '在底部导航栏上显示 "游戏"'
-  2048:
-    title: 2048
-    score: 分数
-    best: 最佳
-    max: 最大
-    records:
-      title: 2048游戏记录
-      record: "最大合成 {maxNumber}，获得分数：{score}"
-  minesweeper:
-    title: 扫雷
-    timeSpent: "用时 {}"
-    gameMode:
-      easy: 简单
-      normal: 普通
-      hard: 困难
-    records:
-      title: 扫雷游戏记录
-      record: "{mode} | {rows}x{columns} 上藏有 {mines} 个地雷"
-  sudoku:
-    title: 数独
-    gameMode:
-      beginner: 入门
-      easy: 简单
-      medium: 中等
-      hard: 困难
-    records:
-      title: 数独游戏记录
-      record: "{mode} | {blanks} 个空位"
-  wordle:
-    title: Wordle
-    vocabulary:
-      all: 全部
-      cet-4: 大学四级
-      cet-6: 大学六级
-      ielts: 雅思
-      toefl: 托福
 permission:
   permissionDenied: 没有权限
   permissionDeniedDescOf: "{} 权限未被授权，请检查应用的设置。"
@@ -1040,10 +527,7 @@ done: 完成
 openInBrowser: 在浏览器中打开
 choose: 挑选
 unspecified: 未指定
-shareQrCode: 分享二维码
 add: 添加
 rename: 重命名
 enter: 进入
-comingSoon: 敬请期待
-recommendation: 推荐
 troubleshoot: 疑难解答

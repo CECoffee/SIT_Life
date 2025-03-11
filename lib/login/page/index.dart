@@ -11,7 +11,6 @@ import 'package:mimir/credentials/utils.dart';
 import 'package:mimir/design/adaptive/dialog.dart';
 import 'package:mimir/design/adaptive/multiplatform.dart';
 import 'package:mimir/design/animation/animated.dart';
-import 'package:mimir/l10n/common.dart';
 import 'package:mimir/login/utils.dart';
 import 'package:mimir/school/utils.dart';
 import 'package:mimir/school/widget/campus.dart';
@@ -29,8 +28,6 @@ const _i18n = _I18n();
 
 class _I18n extends OaLoginI18n {
   const _I18n();
-
-  final network = const NetworkI18n();
 }
 
 const oaForgotLoginPasswordUrl =
