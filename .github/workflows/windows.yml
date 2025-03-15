@@ -10,7 +10,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
-          repository: plum-tech/mimir-x
+          repository: plum-tech/xiaoying-x
           token: ${{ secrets.MIMIR_GITHUB_TOKEN }}
           fetch-depth: 0
 

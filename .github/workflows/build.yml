@@ -19,7 +19,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
-          repository: plum-tech/mimir-x
+          repository: plum-tech/xiaoying-x
           token: ${{ secrets.MIMIR_GITHUB_TOKEN }}
           fetch-depth: 0
 
@@ -85,7 +85,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
-          repository: plum-tech/mimir-x
+          repository: plum-tech/xiaoying-x
           token: ${{ secrets.MIMIR_GITHUB_TOKEN }}
           fetch-depth: 0
 
@@ -165,7 +165,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
-          repository: plum-tech/mimir-x
+          repository: plum-tech/xiaoying-x
           token: ${{ secrets.MIMIR_GITHUB_TOKEN }}
           fetch-depth: 0
 
@@ -207,7 +207,7 @@ jobs:
       - name: Push changes
         uses: ad-m/github-push-action@master
         with:
-          repository: plum-tech/mimir-x
+          repository: plum-tech/xiaoying-x
           github_token: ${{ secrets.MIMIR_GITHUB_TOKEN }}
           branch: ${{ github.ref }}
 
