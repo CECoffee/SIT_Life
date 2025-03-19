@@ -2,14 +2,17 @@ name: Windows
 on: workflow_dispatch
 
 env:
-  flutter_version: '3.22.0'
+  flutter_version: '3.24.4'
 
 jobs:
   build:
     runs-on: windows-latest
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
+        with:
+          repository: plum-tech/xiaoying-x
+          token: ${{ secrets.MIMIR_GITHUB_TOKEN }}
+          fetch-depth: 0
 
       - name: Install Flutter
         uses: subosito/flutter-action@v2

@@ -1,14 +1,13 @@
 import 'package:collection/collection.dart';
-import 'package:fit_system_screenshot/fit_system_screenshot.dart';
 import 'package:flutter/material.dart';
-import 'package:sit/design/adaptive/multiplatform.dart';
-import 'package:sit/design/widgets/common.dart';
+import 'package:mimir/design/adaptive/multiplatform.dart';
+import 'package:mimir/design/widget/common.dart';
 import 'package:rettulf/rettulf.dart';
-import 'package:sit/utils/error.dart';
+import 'package:mimir/utils/error.dart';
 
 import '../entity/service.dart';
 import '../init.dart';
-import '../widgets/service.dart';
+import '../widget/service.dart';
 import '../i18n.dart';
 
 class YwbServiceListPage extends StatefulWidget {
@@ -19,27 +18,20 @@ class YwbServiceListPage extends StatefulWidget {
 }
 
 class _YwbServiceListPageState extends State<YwbServiceListPage> {
-  Dispose? screenShotDispose;
   final scrollAreaKey = GlobalKey();
   final scrollController = ScrollController();
 
   /// in descending order
   List<YwbService>? metaList;
-  bool isLoading = false;
+  bool fetching = false;
 
   @override
   void initState() {
     super.initState();
-    screenShotDispose = fitSystemScreenshot.attachToPage(
-      scrollAreaKey,
-      scrollController,
-      scrollController.jumpTo,
-    );
   }
 
   @override
   void dispose() {
-    screenShotDispose?.call();
     scrollController.dispose();
     super.dispose();
   }
@@ -54,7 +46,7 @@ class _YwbServiceListPageState extends State<YwbServiceListPage> {
     if (!mounted) return;
     setState(() {
       metaList = YwbInit.serviceStorage.serviceList;
-      isLoading = true;
+      fetching = true;
     });
     try {
       final metaList = await YwbInit.serviceService.getServices();
@@ -63,13 +55,13 @@ class _YwbServiceListPageState extends State<YwbServiceListPage> {
       if (!mounted) return;
       setState(() {
         this.metaList = metaList;
-        isLoading = false;
+        fetching = false;
       });
     } catch (error, stackTrace) {
       handleRequestError(error, stackTrace);
       if (!mounted) return;
       setState(() {
-        isLoading = false;
+        fetching = false;
       });
     }
   }
@@ -78,6 +70,7 @@ class _YwbServiceListPageState extends State<YwbServiceListPage> {
   Widget build(BuildContext context) {
     final metaList = this.metaList;
     return Scaffold(
+      floatingActionButton: !fetching ? null : const CircularProgressIndicator.adaptive(),
       body: CustomScrollView(
         key: scrollAreaKey,
         controller: scrollController,
@@ -92,12 +85,6 @@ class _YwbServiceListPageState extends State<YwbServiceListPage> {
                 child: Icon(context.icons.info).padAll(8),
               ),
             ],
-            bottom: isLoading
-                ? const PreferredSize(
-                    preferredSize: Size.fromHeight(4),
-                    child: LinearProgressIndicator(),
-                  )
-                : null,
           ),
           if (metaList != null)
             if (metaList.isEmpty)

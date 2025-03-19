@@ -1,16 +1,15 @@
 import 'package:easy_localization/easy_localization.dart';
-import 'package:sit/credentials/i18n.dart';
-import 'package:sit/l10n/app.dart';
-import 'package:sit/l10n/common.dart';
-import 'package:sit/settings/entity/proxy.dart';
+import 'package:mimir/credentials/i18n.dart';
+import 'package:mimir/l10n/app.dart';
+import 'package:mimir/l10n/common.dart';
 
 const i18n = _I18n();
 
 class _I18n with CommonI18nMixin {
   const _I18n();
 
-  final oaCredentials = const _OaCredentials();
-  final proxy = const _Proxy();
+  final oa = const OaCredentialsI18n();
+  final eduEmail = const EmailCredentialsI18n();
   final dev = const _DevOptions();
   final about = const _About();
   final app = const AppI18n();
@@ -40,46 +39,10 @@ class _I18n with CommonI18nMixin {
   String get wipeDataRequest => "$ns.wipeData.request".tr();
 
   String get wipeDataRequestDesc => "$ns.wipeData.requestDesc".tr();
-}
 
-class _Proxy {
-  const _Proxy();
+  String get loginTest => "$ns.loginTest.title".tr();
 
-  static const ns = "${_I18n.ns}.proxy";
-
-  String get title => "$ns.title".tr();
-
-  String get desc => "$ns.desc".tr();
-
-  String get enableProxy => "$ns.enableProxy.title".tr();
-
-  String get enableProxyDesc => "$ns.enableProxy.desc".tr();
-
-  String get proxyMode => "$ns.proxyMode.title".tr();
-
-  String get shareQrCode => "$ns.shareQrCode.title".tr();
-
-  String get shareQrCodeDesc => "$ns.shareQrCode.desc".tr();
-
-  String get protocol => "$ns.protocol".tr();
-
-  String get hostname => "$ns.hostname".tr();
-
-  String get port => "$ns.port".tr();
-
-  String get enableAuth => "$ns.enableAuth".tr();
-
-  String get authentication => "$ns.authentication".tr();
-
-  String get username => "$ns.username".tr();
-
-  String get password => "$ns.password".tr();
-
-  String get invalidProxyFormatTip => "$ns.invalidProxyFormatTip".tr();
-
-  String get setFromQrCodeAction => "$ns.setFromQrCodeAction".tr();
-
-  String get setFromQrCodeDesc => "$ns.setFromQrCodeDesc".tr();
+  String get loginTestDesc => "$ns.loginTest.desc".tr();
 }
 
 class _About {
@@ -93,11 +56,11 @@ class _About {
 
   String get icpLicense => "$ns.icpLicense".tr();
 
-  String get termsOfUse => "$ns.termsOfUse".tr();
+  String get termsOfService => "$ns.termsOfService".tr();
 
   String get privacyPolicy => "$ns.privacyPolicy".tr();
 
-  String get checkUpdate => "$ns.checkUpdate".tr();
+  String get marketingWebsite => "$ns.marketingWebsite".tr();
 }
 
 class _DevOptions {
@@ -138,24 +101,4 @@ class _Storage with CommonI18nMixin {
   String get deleteItemDesc => "$ns.deleteItemDesc".tr();
 
   String get emptyValueDesc => "$ns.emptyValueDesc".tr();
-}
-
-class _OaCredentials extends OaCredentialsI18n {
-  static const ns = "${_I18n.ns}.credentials";
-
-  const _OaCredentials();
-
-  String get testLoginOa => "$ns.testLoginOa.title".tr();
-
-  String get testLoginOaDesc => "$ns.testLoginOa.desc".tr();
-}
-
-extension ProxyTypeI18nX on ProxyCat {
-  String l10n() => "settings.proxy.proxyType.$name".tr();
-}
-
-extension ProxyModeI18nX on ProxyMode {
-  String l10nName() => "settings.proxy.proxyMode.$name.name".tr();
-
-  String l10nTip() => "settings.proxy.proxyMode.$name.tip".tr();
 }

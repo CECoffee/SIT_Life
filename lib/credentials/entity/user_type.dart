@@ -1,39 +1,22 @@
 import 'package:easy_localization/easy_localization.dart';
-import 'package:sit/storage/hive/type_id.dart';
+import 'package:mimir/storage/hive/type_id.dart';
 
 part 'user_type.g.dart';
-
-typedef UserCapability = ({
-  bool enableClass2nd,
-  bool enableExamArrange,
-  bool enableExamResult,
-});
 
 @HiveType(typeId: CoreHiveType.oaUserType)
 enum OaUserType {
   @HiveField(0)
-  undergraduate((
-    enableClass2nd: true,
-    enableExamArrange: true,
-    enableExamResult: true,
-  )),
+  undergraduate(),
   @HiveField(1)
-  postgraduate((
-    enableClass2nd: false,
-    // postgraduates use a different SIS, so disable them temporarily
-    enableExamArrange: false,
-    enableExamResult: true,
-  )),
+  postgraduate(),
   @HiveField(2)
-  other((
-    enableClass2nd: false,
-    enableExamArrange: false,
-    enableExamResult: false,
-  ));
+  freshman(),
+  @HiveField(3)
+  worker(),
+  @HiveField(4)
+  none();
 
-  final UserCapability capability;
-
-  const OaUserType(this.capability);
+  const OaUserType();
 
   String l10n() => "OaUserType.$name".tr();
 }

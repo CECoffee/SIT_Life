@@ -7,22 +7,29 @@ import 'package:cookie_jar/cookie_jar.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart' hide Key;
 import 'package:logger/logger.dart';
-import 'package:sit/credentials/entity/credential.dart';
-import 'package:sit/credentials/error.dart';
-import 'package:sit/credentials/init.dart';
-import 'package:sit/init.dart';
-import 'package:sit/lifecycle.dart';
-import 'package:sit/r.dart';
+import 'package:mimir/credentials/entity/credential.dart';
+import 'package:mimir/credentials/entity/login_status.dart';
+import 'package:mimir/credentials/error.dart';
+import 'package:mimir/credentials/init.dart';
+import 'package:mimir/init.dart';
+import 'package:mimir/lifecycle.dart';
+import 'package:mimir/login/utils.dart';
+import 'package:mimir/r.dart';
 
-import 'package:sit/session/auth.dart';
-import 'package:sit/utils/error.dart';
-import 'package:sit/utils/riverpod.dart';
 import 'package:encrypt/encrypt.dart';
 
 import '../utils/dio.dart';
 
-class LoginCaptchaCancelledException implements Exception {
-  const LoginCaptchaCancelledException();
+enum LoginCancelReason {
+  captcha,
+  invalidCredentials,
+  ;
+}
+
+class LoginCancelledException implements Exception {
+  final LoginCancelReason reason;
+
+  const LoginCancelledException(this.reason);
 }
 
 class OaCredentialsRequiredException implements Exception {
@@ -44,7 +51,6 @@ const _neededHeaders = {
   "Sec-Fetch-Mode": "navigate",
   "Sec-Fetch-Site": "same-origin",
   "Sec-Fetch-User": "?1",
-  "Referer": "https://authserver.sit.edu.cn/authserver/login",
 };
 
 final networkLogger = Logger(
@@ -53,7 +59,7 @@ final networkLogger = Logger(
     // Number of method calls to be displayed
     errorMethodCount: 8,
     // Print an emoji for each log message
-    printTime: true, // Should each log print contain a timestamp
+    dateTimeFormat: DateTimeFormat.onlyTimeAndSinceStart, // Should each log print contain a timestamp
   ),
 );
 
@@ -65,8 +71,9 @@ class SsoSession {
   static const String _captchaUrl = '$_authServerUrl/captcha.html';
   static const String _loginSuccessUrl = 'https://authserver.sit.edu.cn/authserver/index.do';
 
-  final Dio dio;
-  final CookieJar cookieJar;
+  Dio get _dio => Init.schoolDio;
+
+  CookieJar get _cookieJar => Init.schoolCookieJar;
 
   /// Input captcha manually
   final Future<String?> Function(Uint8List imageBytes) inputCaptcha;
@@ -78,131 +85,176 @@ class SsoSession {
   static final _ssoLock = Lock();
 
   SsoSession({
-    required this.dio,
-    required this.cookieJar,
     required this.inputCaptcha,
   });
 
+  Future<bool> checkConnectivity({
+    String url = "https://myportal.sit.edu.cn/",
+  }) async {
+    try {
+      await Init.dioNoCookie.request(
+        url,
+        options: Options(
+          method: "GET",
+          sendTimeout: const Duration(milliseconds: 5000),
+          receiveTimeout: const Duration(milliseconds: 5000),
+          contentType: Headers.formUrlEncodedContentType,
+          followRedirects: false,
+        ),
+      );
+      return true;
+    } catch (e) {
+      return false;
+    }
+  }
+
+  Future<bool> checkAuthStatus() async {
+    final res = await _dio.requestFollowRedirect(
+      "https://myportal.sit.edu.cn/",
+    );
+    return !_isLoginRequired(res);
+  }
+
   /// - User try to log in actively on a login page.
-  Future<Response> loginLocked(Credentials credentials) async {
+  Future<Response> loginLocked(
+    Credential credentials, {
+    bool active = false,
+  }) async {
     return await _loginLock.run(() async {
       networkLogger.i("loginLocked ${DateTime.now().toIso8601String()}");
       try {
-        final byAutoCaptcha = await _login(
+        return await _login(
           credentials,
-          inputCaptcha: (captchaImage) => AuthSession.recognizeOaCaptcha(captchaImage),
+          inputCaptcha: inputCaptcha,
         );
-        return byAutoCaptcha;
       } catch (error, stackTrace) {
-        debugPrintError(error, stackTrace);
+        if (error is CredentialException) {
+          await () async {
+            if (active) return;
+            final navigateCtx = $key.currentContext;
+            if (navigateCtx == null) return;
+            if (error.type == CredentialErrorType.accountPassword && CredentialsInit.storage.oa.credentials != null) {
+              CredentialsInit.storage.oa.loginStatus = OaLoginStatus.everLogin;
+              if (!navigateCtx.mounted) return;
+              await handleOaPasswordIncorrectException(context: navigateCtx);
+            } else {
+              if (!navigateCtx.mounted) return;
+              await handleLoginException(
+                context: navigateCtx,
+                error: error,
+                stackTrace: stackTrace,
+              );
+            }
+          }();
+        }
+        rethrow;
       }
-      final byManualCaptcha = await _login(
-        credentials,
-        inputCaptcha: inputCaptcha,
-      );
-      return byManualCaptcha;
     });
   }
 
   Future<Response> _request(
     String url, {
     Map<String, String>? queryParameters,
-    dynamic data,
+    dynamic Function()? data,
     Options? options,
     ProgressCallback? onSendProgress,
     ProgressCallback? onReceiveProgress,
   }) async {
-    options ??= Options();
     final debugDepths = <Response>[];
-    Future<Response> requestNormally() async {
-      final response = await dio.request(
+    Future<Response> fetch() async {
+      debugDepths.clear();
+      final response = await _dio.request(
         url,
         queryParameters: queryParameters,
-        options: options?.copyWith(
+        options: (options ?? Options()).copyWith(
           followRedirects: false,
-          validateStatus: (status) {
-            return status! < 400;
-          },
+          headers: _neededHeaders,
         ),
-        data: data,
+        data: data?.call(),
         onSendProgress: onSendProgress,
         onReceiveProgress: onReceiveProgress,
       );
-      final finalResponse = await processRedirect(
-        dio,
+      final finalResponse = await _dio.processRedirect(
         response,
-        headers: _neededHeaders,
-        debugDepths: debugDepths,
+        history: debugDepths,
       );
       return finalResponse;
     }
 
     // request normally at first
-    final firstResponse = await requestNormally();
+    var res = await fetch();
 
     // check if the response is the login page. if so, login it first.
-    if (firstResponse.realUri.toString().contains(_loginUrl)) {
-      final credentials = CredentialsInit.storage.oaCredentials;
+    if (_isLoginRequired(res)) {
+      final credentials = CredentialsInit.storage.oa.credentials;
       if (credentials == null) {
         throw OaCredentialsRequiredException(url: url);
       }
-      await cookieJar.delete(Uri.parse(url), true);
+      await _cookieJar.delete(R.authServerUri, true);
+      await _cookieJar.delete(R.sitUri, true);
+      await _cookieJar.delete(Uri.parse(url), true);
       await loginLocked(credentials);
-      debugDepths.clear();
-      return await requestNormally();
-    } else {
-      return firstResponse;
+      res = await fetch();
     }
+    return res;
   }
 
-  void _setOnline(bool isOnline) {
-    final ctx = $key.currentContext;
-    if (ctx != null && ctx.mounted) {
-      ctx.riverpod().read($oaOnline.notifier).state = isOnline;
+  Future<Response> ssoAuth(
+    String url,
+  ) async {
+    final authorized = await checkAuthStatus();
+    if (!authorized) {
+      await loginLocked(CredentialsInit.storage.oa.credentials!);
     }
+    // sso
+    final res = await _dio.requestFollowRedirect(url);
+    return res;
+  }
+
+  bool _isLoginRequired(Response res) {
+    return res.realUri.toString().contains(_loginUrl);
   }
 
   Future<Cookie?> getJSessionId() async {
-    final cookies = await Init.cookieJar.loadForRequest(Uri.parse(_authServerUrl));
+    final cookies = await Init.schoolCookieJar.loadForRequest(Uri.parse(_authServerUrl));
     return cookies.firstWhereOrNull((cookie) => cookie.name == "JSESSIONID");
   }
 
   Future<Response> _login(
-    Credentials credentials, {
+    Credential credentials, {
     required Future<String?> Function(Uint8List imageBytes) inputCaptcha,
   }) async {
     debugPrint('${credentials.account} logging in');
-    debugPrint('UA: ${dio.options.headers['User-Agent']}');
+    debugPrint('UA: ${_dio.options.headers['User-Agent']}');
     // When logging into OA,
     // the server will record the number of times a user has logged in with the same cookie
     // and the number of times the user made an input error,
     // so it is necessary to clear all cookies before logging in to avoid errors when the user retries.
-    await cookieJar.delete(R.authServerUri, true);
+    await _cookieJar.delete(R.authServerUri, true);
     // await cookieJar.delete(R.authServerUri, true);
     final Response response;
     try {
-      // 首先获取AuthServer首页
+      // get AuthServer homepage
       final html = await _fetchAuthServerHtml();
       var captcha = '';
       if (await isCaptchaRequired(credentials.account)) {
         final captchaImage = await getCaptcha();
         captcha = await getInputtedCaptcha(captchaImage, inputCaptcha);
       }
-      // 获取casTicket
+      // get casTicket
       final casTicket = _extractCasTicketFromAuthHtml(html);
-      // 获取salt
+      // get salt
       final salt = _extractSaltFromAuthHtml(html);
-      // 加密密码
+      // encrypt password
       final hashedPwd = _hashPassword(salt, credentials.password);
-      // 登录系统，获得cookie
+      // login and get cookie
       response = await _postLoginRequest(credentials.account, hashedPwd, captcha, casTicket);
     } catch (e) {
-      _setOnline(false);
       rethrow;
     }
     final pageRaw = response.data as String;
     if (pageRaw.contains("完善资料")) {
-      throw CredentialsException(message: pageRaw, type: CredentialsErrorType.oaIncompleteUserInfo);
+      throw CredentialException(message: pageRaw, type: CredentialErrorType.oaIncompleteUserInfo);
     }
     final page = BeautifulSoup(pageRaw);
     // For desktop
@@ -212,18 +264,15 @@ class SsoSession {
     if (authError.isNotEmpty || mobileError.isNotEmpty) {
       final errorMessage = authError + mobileError;
       final type = _parseInvalidType(errorMessage);
-      _setOnline(false);
-      throw CredentialsException(message: errorMessage, type: type);
+      throw CredentialException(message: errorMessage, type: type);
     }
 
     if (response.realUri.toString() != _loginSuccessUrl) {
       debugPrint('Unknown auth error at "${response.realUri}"');
-      _setOnline(false);
       throw Exception(response.data.toString());
     }
     debugPrint('${credentials.account} logged in');
-    CredentialsInit.storage.oaLastAuthTime = DateTime.now();
-    _setOnline(true);
+    CredentialsInit.storage.oa.lastAuthTime = DateTime.now();
     return response;
   }
 
@@ -236,25 +285,25 @@ class SsoSession {
       debugPrint("Captcha entered is $c");
       return c;
     } else {
-      throw const LoginCaptchaCancelledException();
+      throw const LoginCancelledException(LoginCancelReason.captcha);
     }
   }
 
   Future<void> deleteSitUriCookies() async {
     for (final uri in R.sitUriList) {
-      await cookieJar.delete(uri, true);
+      await _cookieJar.delete(uri, true);
     }
   }
 
-  static CredentialsErrorType _parseInvalidType(String errorMessage) {
+  static CredentialErrorType _parseInvalidType(String errorMessage) {
     if (errorMessage.contains("验证码")) {
-      return CredentialsErrorType.captcha;
+      return CredentialErrorType.captcha;
     } else if (errorMessage.contains("冻结")) {
-      return CredentialsErrorType.oaFrozen;
+      return CredentialErrorType.oaFrozen;
     } else if (errorMessage.contains("锁定")) {
-      return CredentialsErrorType.oaLocked;
+      return CredentialErrorType.oaLocked;
     }
-    return CredentialsErrorType.accountPassword;
+    return CredentialErrorType.accountPassword;
   }
 
   /// Extract the Salt from the auth page
@@ -277,7 +326,7 @@ class SsoSession {
 
   /// Fetch the auth page, where the account, password and captcha box are.
   Future<String> _fetchAuthServerHtml() async {
-    final response = await dio.get(
+    final response = await _dio.get(
       _loginUrl,
       options: Options(headers: Map.from(_neededHeaders)..remove('Referer')),
     );
@@ -286,7 +335,7 @@ class SsoSession {
 
   /// check if captcha is required for this logging in
   Future<bool> isCaptchaRequired(String username) async {
-    final response = await dio.get(
+    final response = await _dio.get(
       _needCaptchaUrl,
       queryParameters: {
         'username': username,
@@ -300,7 +349,7 @@ class SsoSession {
   }
 
   Future<Uint8List> getCaptcha() async {
-    final response = await dio.get(
+    final response = await _dio.get(
       _captchaUrl,
       options: Options(
         responseType: ResponseType.bytes,
@@ -314,7 +363,7 @@ class SsoSession {
   /// Login the single sign-on
   Future<Response> _postLoginRequest(String username, String hashedPassword, String captcha, String casTicket) async {
     // Login
-    final res = await dio.post(
+    final res = await _dio.post(
       _loginUrl,
       data: {
         'username': username,
@@ -336,11 +385,10 @@ class SsoSession {
       ),
     );
     final debugDepths = <Response>[];
-    final finalResponse = await processRedirect(
-      dio,
+    final finalResponse = await _dio.processRedirect(
       res,
       headers: _neededHeaders,
-      debugDepths: debugDepths,
+      history: debugDepths,
     );
     return finalResponse;
   }
@@ -348,7 +396,7 @@ class SsoSession {
   Future<Response> request(
     String url, {
     Map<String, String>? queryParameters,
-    data,
+    dynamic Function()? data,
     Options? options,
     ProgressCallback? onSendProgress,
     ProgressCallback? onReceiveProgress,
@@ -356,17 +404,13 @@ class SsoSession {
     networkLogger.i("$SsoSession.request ${DateTime.now().toIso8601String()}");
     return await _ssoLock.run<Response>(() async {
       networkLogger.i("$SsoSession.request-locked ${DateTime.now().toIso8601String()}");
-      try {
-        return await _request(
-          url,
-          queryParameters: queryParameters,
-          data: data,
-          options: options,
-        );
-      } catch (error, stackTrace) {
-        debugPrintError(error, stackTrace);
-        rethrow;
-      }
+      final res = await _request(
+        url,
+        queryParameters: queryParameters,
+        data: data,
+        options: options,
+      );
+      return res;
     });
   }
 }

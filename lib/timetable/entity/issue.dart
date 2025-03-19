@@ -1,15 +1,11 @@
-import 'package:sit/l10n/time.dart';
-import 'package:sit/settings/dev.dart';
-import 'package:sit/timetable/entity/patch.dart';
+import 'package:mimir/l10n/time.dart';
 import 'package:statistics/statistics.dart';
 
 import 'timetable.dart';
-import 'timetable_entity.dart';
 
 enum TimetableIssueType {
   empty,
   cbeCourse,
-  patchOutOfRange,
   courseOverlaps,
   ;
 }
@@ -35,29 +31,9 @@ class TimetableCbeIssue implements TimetableIssue {
     required this.courseKey,
   });
 
-  static bool detect(SitCourse course) {
+  static bool detect(Course course) {
     if (course.courseName.contains("自修") || course.courseName.contains("免听")) {
       return true;
-    }
-    return false;
-  }
-}
-
-/// Credit by Examination
-class TimetablePatchOutOfRangeIssue implements TimetableIssue {
-  @override
-  TimetableIssueType get type => TimetableIssueType.patchOutOfRange;
-  final TimetablePatch patch;
-
-  const TimetablePatchOutOfRangeIssue({
-    required this.patch,
-  });
-
-  static bool detect(SitTimetable timetable, TimetablePatch patch) {
-    if (patch is WithTimetableDayLoc) {
-      if (!(patch as WithTimetableDayLoc).allLocInRange(timetable)) {
-        return true;
-      }
     }
     return false;
   }
@@ -86,7 +62,7 @@ class TimetableCourseOverlapIssue implements TimetableIssue {
   }
 }
 
-extension SitTimetable4IssueX on SitTimetable {
+extension Timetable4IssueX on Timetable {
   List<TimetableIssue> inspect() {
     final issues = <TimetableIssue>[];
     // check if empty
@@ -100,41 +76,6 @@ extension SitTimetable4IssueX on SitTimetable {
         issues.add(TimetableCbeIssue(
           courseKey: course.courseKey,
         ));
-      }
-    }
-
-    // TODO: finish overlap issue inspection
-    if (Dev.on) {
-      final overlaps = <TimetableCourseOverlapIssue>[];
-      final entity = resolve();
-      for (final day in entity.days) {
-        for (var timeslot = 0; timeslot < day.timeslot2LessonSlot.length; timeslot++) {
-          final lessonSlot = day.timeslot2LessonSlot[timeslot];
-          if (lessonSlot.lessons.length >= 2) {
-            final issue = TimetableCourseOverlapIssue(
-              courseKeys: lessonSlot.lessons.map((l) => l.course.courseKey).toList(),
-              weekIndex: day.weekIndex,
-              weekday: day.weekday,
-              timeslots: (start: timeslot, end: timeslot),
-            );
-            if (overlaps.every((overlap) => !overlap.isSameOne(issue))) {
-              overlaps.add(issue);
-            }
-          }
-        }
-      }
-      issues.addAll(overlaps);
-    }
-    if (Dev.on) {
-      for (var i = 0; i < patches.length; i++) {
-        final patch = patches[i];
-        if (patch is TimetablePatch) {
-          if (TimetablePatchOutOfRangeIssue.detect(this, patch)) {
-            issues.add(TimetablePatchOutOfRangeIssue(
-              patch: patch,
-            ));
-          }
-        }
       }
     }
     return issues;

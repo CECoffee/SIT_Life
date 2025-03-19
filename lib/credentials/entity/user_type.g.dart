@@ -18,7 +18,11 @@ class OaUserTypeAdapter extends TypeAdapter<OaUserType> {
       case 1:
         return OaUserType.postgraduate;
       case 2:
-        return OaUserType.other;
+        return OaUserType.freshman;
+      case 3:
+        return OaUserType.worker;
+      case 4:
+        return OaUserType.none;
       default:
         return OaUserType.undergraduate;
     }
@@ -33,8 +37,14 @@ class OaUserTypeAdapter extends TypeAdapter<OaUserType> {
       case OaUserType.postgraduate:
         writer.writeByte(1);
         break;
-      case OaUserType.other:
+      case OaUserType.freshman:
         writer.writeByte(2);
+        break;
+      case OaUserType.worker:
+        writer.writeByte(3);
+        break;
+      case OaUserType.none:
+        writer.writeByte(4);
         break;
     }
   }

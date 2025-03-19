@@ -1,7 +1,6 @@
 import 'package:copy_with_extension/copy_with_extension.dart';
 import 'package:json_annotation/json_annotation.dart';
-import 'package:sit/l10n/time.dart';
-import 'package:sit/utils/byte_io/byte_io.dart';
+import 'package:mimir/l10n/time.dart';
 
 import 'timetable.dart';
 import '../i18n.dart';
@@ -62,17 +61,6 @@ class TimetablePos {
     }
   }
 
-  void serialize(ByteWriter writer) {
-    writer.uint8(weekIndex);
-    writer.uint8(weekday.index);
-  }
-
-  static TimetablePos deserialize(ByteReader reader) {
-    final weekIndex = reader.uint8();
-    final weekdayIndex = reader.uint8();
-    return TimetablePos(weekIndex: weekIndex, weekday: Weekday.fromIndex(weekdayIndex));
-  }
-
   String l10n() {
     return "${i18n.weekOrderedName(number: weekIndex + 1)} ${weekday.l10n()}";
   }
@@ -108,7 +96,7 @@ extension _DateTimeX on DateTime {
   }
 }
 
-extension TimetableX on SitTimetable {
+extension TimetableX on Timetable {
   TimetablePos locate(DateTime current) {
     return TimetablePos.locate(current, relativeTo: startDate);
   }

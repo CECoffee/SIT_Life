@@ -3,9 +3,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_platform_widgets/flutter_platform_widgets.dart';
 import 'package:go_router/go_router.dart';
 import 'package:rettulf/rettulf.dart';
-import 'package:sit/settings/settings.dart';
-import 'package:sit/utils/color.dart';
-import 'package:sit/utils/save.dart';
+import 'package:mimir/design/dash.dart';
+import 'package:mimir/settings/settings.dart';
+import 'package:mimir/utils/color.dart';
+import 'package:mimir/utils/save.dart';
 import 'package:system_theme/system_theme.dart';
 import '../i18n.dart';
 
@@ -24,9 +25,8 @@ class _ThemeColorPageState extends State<ThemeColorPage> {
 
   @override
   Widget build(BuildContext context) {
-    final canSave = this.canSave();
     return PromptSaveBeforeQuitScope(
-      changed: canSave,
+      changed: shouldSave(),
       onSave: onSave,
       child: Scaffold(
         body: CustomScrollView(
@@ -39,7 +39,7 @@ class _ThemeColorPageState extends State<ThemeColorPage> {
               title: i18n.themeColor.text(),
               actions: [
                 PlatformTextButton(
-                  onPressed: canSave ? onSave : null,
+                  onPressed: onSave,
                   child: i18n.save.text(),
                 )
               ],
@@ -74,7 +74,7 @@ class _ThemeColorPageState extends State<ThemeColorPage> {
     return SystemTheme.accentColor.maybeAccent ?? context.colorScheme.primary;
   }
 
-  bool canSave() {
+  bool shouldSave() {
     return fromSystem != Settings.theme.themeColorFromSystem ||
         themeColor != (Settings.theme.themeColor ?? getDefaultThemeColor());
   }
@@ -100,6 +100,18 @@ class _ThemeColorPageState extends State<ThemeColorPage> {
     });
   }
 
+  Widget buildFromSystemToggle() {
+    return SwitchListTile.adaptive(
+      title: i18n.fromSystem.text(),
+      value: fromSystem,
+      onChanged: (value) {
+        setState(() {
+          fromSystem = value;
+        });
+      },
+    );
+  }
+
   Widget buildThemeColorTile() {
     return ListTile(
       leading: const Icon(Icons.color_lens_outlined),
@@ -114,20 +126,6 @@ class _ThemeColorPageState extends State<ThemeColorPage> {
           width: 32,
           height: 32,
         ),
-      ),
-    );
-  }
-
-  Widget buildFromSystemToggle() {
-    return ListTile(
-      title: i18n.fromSystem.text(),
-      trailing: Switch.adaptive(
-        value: fromSystem,
-        onChanged: (value) {
-          setState(() {
-            fromSystem = value;
-          });
-        },
       ),
     );
   }
@@ -147,24 +145,28 @@ class ThemeColorPreview extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return [
-      Card(
-        child: _PreviewTile(
-          trailing: (v, f) => Checkbox.adaptive(
-            value: v,
-            onChanged: (v) => f(v != true),
+    return DashBoxed(
+      child: Container(
+        child: [
+          Card(
+            child: _PreviewTile(
+              trailing: (v, f) => Checkbox.adaptive(
+                value: v,
+                onChanged: (v) => f(v != true),
+              ),
+            ),
           ),
-        ),
+          Card.filled(
+              child: _PreviewTile(
+            trailing: (v, f) => Switch.adaptive(
+              value: v,
+              onChanged: f,
+            ),
+          )),
+          const _PreviewButton().padAll(8),
+        ].column(caa: CrossAxisAlignment.start),
       ),
-      Card.filled(
-          child: _PreviewTile(
-        trailing: (v, f) => Switch.adaptive(
-          value: v,
-          onChanged: f,
-        ),
-      )),
-      _PreviewButton().padAll(8),
-    ].column(caa: CrossAxisAlignment.start);
+    );
   }
 }
 
@@ -213,6 +215,10 @@ class _PreviewButtonState extends State<_PreviewButton> {
   Widget build(BuildContext context) {
     return [
       FilledButton(
+        onPressed: () {},
+        child: i18n.themeColor.text(),
+      ),
+      FilledButton.tonal(
         onPressed: () {},
         child: i18n.themeColor.text(),
       ),

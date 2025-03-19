@@ -7,9 +7,8 @@ class CoreHiveType {
   static const version = 2;
   static const campus = 3;
   static const credentials = 4;
-  static const loginStatus = 5;
+  static const oaLoginStatus = 5;
   static const oaUserType = 6;
-  static const proxyMode = 7;
 }
 
 class CacheHiveType {
@@ -62,7 +61,7 @@ class CacheHiveType {
 
   // School yellow pages 5
   static const _yellowPages = _oaAnnounce + 10;
-  static const schoolContact = _yellowPages + 0;
+  // static const schoolContact = _yellowPages + 0;
 
   // Library 20
   static const _library = _yellowPages + 5;

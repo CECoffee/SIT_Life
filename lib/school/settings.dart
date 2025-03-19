@@ -1,6 +1,9 @@
-import 'package:flutter/cupertino.dart';
-import 'package:sit/utils/hive.dart';
+import 'package:flutter/foundation.dart';
+import 'package:mimir/utils/hive.dart';
 import 'package:hive_flutter/hive_flutter.dart';
+
+const _kElectricityAutoRefresh = true;
+const _kExpenseRecordsAutoRefresh = true;
 
 const _kClass2ndAutoRefresh = true;
 
@@ -9,9 +12,9 @@ class SchoolSettings {
 
   SchoolSettings(this.box);
 
+  late final electricity = _Electricity(box);
+  late final expense = _ExpenseRecords(box);
   late final class2nd = _Class2nd(box);
-  late final examResult = _ExamResult(box);
-  late final examArrange = _ExamArrange(box);
 
   static const ns = "/school";
 }
@@ -31,33 +34,41 @@ class _Class2nd {
   set autoRefresh(bool newV) => box.safePut<bool>(_Class2ndK.autoRefresh, newV);
 }
 
-const _kExamResulShowResultPreview = true;
-
-class _ExamResultK {
-  static const ns = "${SchoolSettings.ns}/examResult";
-  static const showResultPreview = "$ns/showResultPreview";
+class _ElectricityK {
+  static const ns = "${SchoolSettings.ns}/electricity";
+  static const autoRefresh = "$ns/autoRefresh";
+  static const selectedRoom = "$ns/selectedRoom";
 }
 
-class _ExamResult {
+class _Electricity {
   final Box box;
 
-  _ExamResult(this.box);
+  _Electricity(this.box);
 
-  bool get showResultPreview => box.safeGet<bool>(_ExamResultK.showResultPreview) ?? _kExamResulShowResultPreview;
+  bool get autoRefresh => box.safeGet<bool>(_ElectricityK.autoRefresh) ?? _kElectricityAutoRefresh;
 
-  set showResultPreview(bool newV) => box.safePut<bool>(_ExamResultK.showResultPreview, newV);
+  set autoRefresh(bool foo) => box.safePut<bool>(_ElectricityK.autoRefresh, foo);
 
-  Listenable listenShowResultPreview() => box.listenable(keys: [_ExamResultK.showResultPreview]);
+  String? get selectedRoom => box.safeGet<String>(_ElectricityK.selectedRoom);
 
-  late final $showResultPreview = box.provider<bool>(_ExamResultK.showResultPreview);
+  late final $selectedRoom = box.provider<String>(_ElectricityK.selectedRoom);
+
+  set selectedRoom(String? newV) => box.safePut<String>(_ElectricityK.selectedRoom, newV);
+
+  ValueListenable listenSelectedRoom() => box.listenable(keys: [_ElectricityK.selectedRoom]);
 }
 
-class _ExamArrangeK {
-  static const ns = "${SchoolSettings.ns}/examArrange";
+class _ExpenseK {
+  static const ns = "${SchoolSettings.ns}/expenseRecords";
+  static const autoRefresh = "$ns/autoRefresh";
 }
 
-class _ExamArrange {
+class _ExpenseRecords {
   final Box box;
 
-  const _ExamArrange(this.box);
+  const _ExpenseRecords(this.box);
+
+  bool get autoRefresh => box.safeGet<bool>(_ExpenseK.autoRefresh) ?? _kExpenseRecordsAutoRefresh;
+
+  set autoRefresh(bool foo) => box.safePut<bool>(_ExpenseK.autoRefresh, foo);
 }

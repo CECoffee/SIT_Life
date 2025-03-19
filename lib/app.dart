@@ -1,27 +1,21 @@
 import 'dart:async';
-import 'dart:io';
 import 'dart:ui';
 
 import 'package:animations/animations.dart';
-import 'package:app_links/app_links.dart';
 import 'package:easy_localization/easy_localization.dart';
-import 'package:fit_system_screenshot/fit_system_screenshot.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:sit/files.dart';
-import 'package:sit/file_type/handle.dart';
-import 'package:sit/lifecycle.dart';
-import 'package:sit/qrcode/handle.dart';
-import 'package:sit/r.dart';
-import 'package:sit/route.dart';
-import 'package:sit/settings/dev.dart';
-import 'package:sit/settings/settings.dart';
-import 'package:sit/update/utils.dart';
-import 'package:sit/utils/color.dart';
+import 'package:mimir/agreements/entity/agreements.dart';
+import 'package:mimir/agreements/page/privacy_policy.dart';
+import 'package:mimir/lifecycle.dart';
+import 'package:mimir/r.dart';
+import 'package:mimir/route.dart';
+import 'package:mimir/settings/settings.dart';
+import 'package:mimir/utils/color.dart';
 import 'package:system_theme/system_theme.dart';
-
-final $appLinks = StateProvider((ref) => <({Uri uri, DateTime ts})>[]);
+import 'package:universal_platform/universal_platform.dart';
 
 class MimirApp extends ConsumerStatefulWidget {
   const MimirApp({super.key});
@@ -31,18 +25,38 @@ class MimirApp extends ConsumerStatefulWidget {
 }
 
 class _MimirAppState extends ConsumerState<MimirApp> {
-  final $routingConfig = ValueNotifier(
-    Settings.focusTimetable ? buildTimetableFocusRouter() : buildCommonRoutingConfig(),
-  );
+  final $routingConfig = ValueNotifier(buildTimetableFocusRouter());
   late final router = buildRouter($routingConfig);
+  StreamSubscription? intentSub;
+  StreamSubscription? $appLink;
+
+  @override
+  void initState() {
+    super.initState();
+    if (UniversalPlatform.isAndroid) {
+      SystemChrome.setSystemUIOverlayStyle(
+        const SystemUiOverlayStyle(systemNavigationBarColor: Colors.transparent),
+      );
+      SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
+    }
+  }
+
+  void onChanged() {
+    final config = router.routerDelegate.currentConfiguration;
+    debugPrint("${config.uri}");
+  }
+
+  @override
+  void dispose() {
+    $appLink?.cancel();
+    intentSub?.cancel();
+    router.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
-    final demoMode = ref.watch(Dev.$demoMode);
     final themeColorFromSystem = ref.watch(Settings.theme.$themeColorFromSystem) ?? true;
-    ref.listen(Settings.$focusTimetable, (pre, next) {
-      $routingConfig.value = next ?? false ? buildTimetableFocusRouter() : buildCommonRoutingConfig();
-    });
     final themeColor = themeColorFromSystem
         ? SystemTheme.accentColor.maybeAccent
         : ref.watch(Settings.theme.$themeColor) ?? SystemTheme.accentColor.maybeAccent;
@@ -50,6 +64,13 @@ class _MimirAppState extends ConsumerState<MimirApp> {
     ThemeData bakeTheme(ThemeData origin) {
       return origin.copyWith(
         platform: R.debugCupertino ? TargetPlatform.iOS : null,
+        menuTheme: MenuThemeData(
+          style: (origin.menuTheme.style ?? const MenuStyle()).copyWith(
+            shape: WidgetStatePropertyAll<OutlinedBorder?>(
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(12.0)),
+            ),
+          ),
+        ),
         colorScheme: themeColor == null
             ? null
             : ColorScheme.fromSeed(
@@ -60,6 +81,9 @@ class _MimirAppState extends ConsumerState<MimirApp> {
         splashFactory: kIsWeb ? null : InkSparkle.splashFactory,
         navigationBarTheme: const NavigationBarThemeData(
           height: 60,
+        ),
+        snackBarTheme: const SnackBarThemeData(
+          behavior: SnackBarBehavior.floating,
         ),
         pageTransitionsTheme: const PageTransitionsTheme(
           builders: {
@@ -77,7 +101,6 @@ class _MimirAppState extends ConsumerState<MimirApp> {
       title: R.appName,
       onGenerateTitle: (ctx) => "appName".tr(),
       routerConfig: router,
-      debugShowCheckedModeBanner: !demoMode,
       localizationsDelegates: context.localizationDelegates,
       supportedLocales: context.supportedLocales,
       locale: context.locale,
@@ -86,7 +109,7 @@ class _MimirAppState extends ConsumerState<MimirApp> {
       darkTheme: bakeTheme(ThemeData.dark()),
       builder: (ctx, child) => _PostServiceRunner(
         key: const ValueKey("Post service runner"),
-        child: child ?? const SizedBox(),
+        child: child ?? const SizedBox.shrink(),
       ),
       scrollBehavior: const MaterialScrollBehavior().copyWith(
         dragDevices: {
@@ -114,61 +137,20 @@ class _PostServiceRunner extends ConsumerStatefulWidget {
 }
 
 class _PostServiceRunnerState extends ConsumerState<_PostServiceRunner> {
-  StreamSubscription? $appLink;
-
   @override
   void initState() {
     super.initState();
-    if (!kIsWeb) {
-      fitSystemScreenshot.init();
-    }
-    if (!kIsWeb) {
-      Future.delayed(Duration.zero).then((value) async {
-        await checkAppUpdate(
-          context: $key.currentContext!,
-          delayAtLeast: const Duration(milliseconds: 3000),
-          manually: false,
-        );
-      });
-    }
     WidgetsBinding.instance.addPostFrameCallback((timeStamp) async {
-      $appLink = AppLinks().uriLinkStream.listen((uri) async {
-        ref.read($appLinks.notifier).state = [...ref.read($appLinks), (uri: uri, ts: DateTime.now())];
-        final navigateCtx = $key.currentContext;
-        if (navigateCtx == null) return;
-        if (!kIsWeb) {
-          final maybePath = Uri.decodeFull(uri.toString());
-          final isFile = await File(maybePath).exists();
-          if (isFile) {
-            if (!navigateCtx.mounted) return;
-            await onHandleFilePath(context: navigateCtx, path: maybePath);
-            return;
-          }
-        }
-        if (!navigateCtx.mounted) return;
-        await onHandleDeepLink(context: navigateCtx, deepLink: uri);
-      });
+      final navigateCtx = $key.currentContext;
+      if (navigateCtx == null) return;
+      final accepted = ref.read(Settings.agreements.$basicAcceptanceOf(AgreementVersion.current));
+      if (accepted == true) return;
+      await AgreementsAcceptanceSheet.show(navigateCtx);
     });
   }
 
   @override
-  void didChangeDependencies() {
-    // precache timetable background file
-    final timetableBk = Settings.timetable.backgroundImage;
-    if (timetableBk != null && timetableBk.enabled) {
-      if (kIsWeb) {
-        precacheImage(NetworkImage(timetableBk.path), context);
-      } else {
-        precacheImage(FileImage(Files.timetable.backgroundFile), context);
-      }
-    }
-    super.didChangeDependencies();
-  }
-
-  @override
   void dispose() {
-    $appLink?.cancel();
-    fitSystemScreenshot.release();
     super.dispose();
   }
 

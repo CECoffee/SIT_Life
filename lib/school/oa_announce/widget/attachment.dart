@@ -2,13 +2,14 @@ import 'dart:io';
 
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
+import 'package:mimir/design/animation/progress.dart';
 import 'package:sanitize_filename/sanitize_filename.dart';
-import 'package:sit/design/adaptive/dialog.dart';
+import 'package:mimir/design/adaptive/dialog.dart';
 import 'package:open_file/open_file.dart';
 import 'package:rettulf/rettulf.dart';
-import 'package:sit/files.dart';
-import 'package:sit/init.dart';
-import 'package:sit/utils/error.dart';
+import 'package:mimir/files.dart';
+import 'package:mimir/init.dart';
+import 'package:mimir/utils/error.dart';
 
 import '../entity/announce.dart';
 import '../i18n.dart';
@@ -47,7 +48,7 @@ class _AttachmentLinkTileState extends State<AttachmentLinkTile> {
       ),
       subtitle: progress == null
           ? null
-          : LinearProgressIndicator(
+          : AnimatedProgressBar(
               value: progress.isNaN ? null : progress,
             ),
     );
@@ -119,7 +120,7 @@ Future<void> _onDownloadFile({
 }) async {
   debugPrint('Start downloading [$name]($url) to $target');
   // 如果文件不存在，那么下载文件
-  await Init.dio.download(
+  await Init.schoolDio.download(
     url,
     target.path,
     onReceiveProgress: (int count, int total) {

@@ -3,9 +3,8 @@ import 'dart:io';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
 import 'package:hive/hive.dart';
-import 'package:sit/settings/dev.dart';
-import 'package:sit/settings/meta.dart';
-import 'package:sit/settings/settings.dart';
+import 'package:mimir/settings/meta.dart';
+import 'package:mimir/settings/settings.dart';
 import "package:hive/src/hive_impl.dart";
 import 'adapter.dart';
 
@@ -17,30 +16,23 @@ class HiveInit {
 
   static late Box //
       credentials,
-      library,
       timetable,
+      settings,
+      meta,
+      cookies;
+
+  static late Box //
       expense,
-      yellowPages,
       class2nd,
       examArrange,
       examResult,
       oaAnnounce,
       ywb,
-      eduEmail,
-      settings,
       electricity,
-      meta,
-      cookies,
-      dev;
-
-  static late Box //
-      game2048,
-      gameMinesweeper,
-      gameSudoku;
+      schoolCookies;
 
   static late Map<String, Box> name2Box;
   static late List<Box> cacheBoxes;
-  static late List<Box> gameBoxes;
 
   static Future<void> initLocalStorage({
     required Directory coreDir,
@@ -64,28 +56,21 @@ class HiveInit {
       settings = await core.openBox('settings'),
       meta = await core.openBox('meta'),
       timetable = await core.openBox('timetable'),
-      dev = await core.openBox("dev"),
       ...cacheBoxes = [
-        yellowPages = await cache.openBox('yellow-pages'),
-        eduEmail = await cache.openBox('edu-email'),
-        if (!kIsWeb) cookies = await cache.openBox('cookies'),
-        if (!kIsWeb) expense = await cache.openBox('expense'),
-        if (!kIsWeb) library = await cache.openBox('library'),
-        if (!kIsWeb) examArrange = await cache.openBox('exam-arrange'),
-        if (!kIsWeb) examResult = await cache.openBox('exam-result'),
-        if (!kIsWeb) oaAnnounce = await cache.openBox('oa-announce'),
-        if (!kIsWeb) class2nd = await cache.openBox('class2nd'),
-        if (!kIsWeb) ywb = await cache.openBox('ywb'),
-        if (!kIsWeb) electricity = await cache.openBox('electricity'),
+        if (!kIsWeb) ...[
+          cookies = await cache.openBox('cookies'),
+          schoolCookies = await cache.openBox('school-cookies'),
+          expense = await cache.openBox('expense'),
+          examArrange = await cache.openBox('exam-arrange'),
+          examResult = await cache.openBox('exam-result'),
+          oaAnnounce = await cache.openBox('oa-announce'),
+          class2nd = await cache.openBox('class2nd'),
+          ywb = await cache.openBox('ywb'),
+          electricity = await cache.openBox('electricity'),
+        ],
       ],
-      ...gameBoxes = [
-        game2048 = await core.openBox("game-2048"),
-        gameMinesweeper = await core.openBox("game-minesweeper"),
-        gameSudoku = await core.openBox("game-sudoku"),
-      ]
     ]);
     Settings = SettingsImpl(settings);
-    Dev = DevSettingsImpl(dev);
     Meta = MetaImpl(meta);
   }
 

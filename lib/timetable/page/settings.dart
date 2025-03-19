@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:sit/settings/settings.dart';
+import 'package:mimir/settings/settings.dart';
 import 'package:rettulf/rettulf.dart';
 import '../i18n.dart';
 
@@ -33,24 +33,10 @@ class _TimetableSettingsPageState extends State<TimetableSettingsPage> {
               const QuickLookCourseOnTapTile(),
               const Divider(),
               buildCellStyle(),
-              buildP13n(),
-              buildBackground(),
             ],
           ),
         ],
       ),
-    );
-  }
-
-  Widget buildP13n() {
-    return ListTile(
-      leading: const Icon(Icons.color_lens_outlined),
-      title: i18n.settings.palette.text(),
-      subtitle: i18n.settings.paletteDesc.text(),
-      trailing: const Icon(Icons.open_in_new),
-      onTap: () async {
-        await context.push("/timetable/p13n");
-      },
     );
   }
 
@@ -65,18 +51,6 @@ class _TimetableSettingsPageState extends State<TimetableSettingsPage> {
       },
     );
   }
-
-  Widget buildBackground() {
-    return ListTile(
-      leading: const Icon(Icons.image_outlined),
-      title: i18n.settings.background.text(),
-      subtitle: i18n.settings.backgroundDesc.text(),
-      trailing: const Icon(Icons.open_in_new),
-      onTap: () async {
-        await context.push("/timetable/background");
-      },
-    );
-  }
 }
 
 class QuickLookCourseOnTapTile extends ConsumerWidget {
@@ -84,17 +58,15 @@ class QuickLookCourseOnTapTile extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final on = ref.watch(Settings.timetable.$quickLookLessonOnTap) ?? true;
-    return ListTile(
-      leading: const Icon(Icons.touch_app),
+    final on = ref.watch(Settings.timetable.$quickLookLessonOnTap);
+    return SwitchListTile.adaptive(
+      secondary: const Icon(Icons.touch_app),
       title: i18n.settings.quickLookLessonOnTap.text(),
       subtitle: i18n.settings.quickLookLessonOnTapDesc.text(),
-      trailing: Switch.adaptive(
-        value: on,
-        onChanged: (newV) {
-          ref.read(Settings.timetable.$quickLookLessonOnTap.notifier).set(newV);
-        },
-      ),
+      value: on,
+      onChanged: (newV) {
+        ref.read(Settings.timetable.$quickLookLessonOnTap.notifier).set(newV);
+      },
     );
   }
 }
@@ -104,17 +76,15 @@ class AutoUseImportedTile extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final on = ref.watch(Settings.timetable.$autoUseImported) ?? true;
-    return ListTile(
+    final on = ref.watch(Settings.timetable.$autoUseImported);
+    return SwitchListTile.adaptive(
+      secondary: const Icon(Icons.calendar_month),
       title: i18n.settings.autoUseImported.text(),
       subtitle: i18n.settings.autoUseImportedDesc.text(),
-      leading: const Icon(Icons.auto_mode_outlined),
-      trailing: Switch.adaptive(
-        value: on,
-        onChanged: (newV) {
-          ref.read(Settings.timetable.$autoUseImported.notifier).set(newV);
-        },
-      ),
+      value: on,
+      onChanged: (newV) {
+        ref.read(Settings.timetable.$autoUseImported.notifier).set(newV);
+      },
     );
   }
 }

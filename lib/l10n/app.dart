@@ -1,7 +1,5 @@
-import 'package:sit/timetable/i18n.dart' as t;
-import 'package:sit/school/i18n.dart' as s;
-import 'package:sit/life/i18n.dart' as l;
-import 'package:sit/game/i18n.dart' as g;
+import 'package:mimir/timetable/i18n.dart' as t;
+import 'package:mimir/school/i18n.dart' as s;
 
 class AppI18n {
   const AppI18n();
@@ -13,6 +11,4 @@ class _Navigation {
 
   String get timetable => t.i18n.navigation;
   String get school => s.i18n.navigation;
-  String get life => l.i18n.navigation;
-  String get game => g.i18n.navigation;
 }

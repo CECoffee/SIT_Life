@@ -2,9 +2,10 @@ import 'package:collection/collection.dart';
 import 'package:copy_with_extension/copy_with_extension.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:json_annotation/json_annotation.dart';
-import 'package:sit/school/utils.dart';
-import 'package:sit/storage/hive/type_id.dart';
-import 'package:sit/school/entity/school.dart';
+import 'package:mimir/school/utils.dart';
+import 'package:mimir/storage/hive/type_id.dart';
+import 'package:mimir/school/entity/school.dart';
+import 'package:mimir/utils/date.dart';
 
 part 'result.ug.g.dart';
 
@@ -175,12 +176,7 @@ class ExamResultUg {
   }
 
   static int compareByTime(ExamResultUg a, ExamResultUg b) {
-    final timeA = a.time;
-    final timeB = b.time;
-    if (timeA == null && timeB == null) return 0;
-    if (timeA == null) return -1;
-    if (timeB == null) return 1;
-    return timeA.compareTo(timeB);
+    return dateTimeComparator(a.time, b.time);
   }
 
   @override

@@ -18,8 +18,32 @@ enum AppPlatform {
 }
 
 class InstallerStore {
+  // Android: general
+  static const android = "com.android.packageinstaller";
+
+  // Apple: Test Flight
   static const testFlight = "com.apple.testflight";
+
+  // Apple: App Store
   static const appStore = "com.apple";
+
+  // OPPO, Realme: 应用商店
+  static const heytap = "com.heytap.market";
+
+  // VIVO: 应用商店
+  static const vivo = "com.bbk.appstore";
+
+  // Xiaomi, Redmi: 纯净模式
+  static const miui = "com.miui.packageinstaller";
+
+  // Xiaomi, Redmi: 小米应用商店
+  static const xiaomiMarket = "com.xiaomi.market";
+
+  // Huawei: backup
+  static const huaweiBackup = "com.huawei.localBackup";
+
+  // Huawei: browser
+  static const huaweiBrowser = "com.huawei.browser";
 }
 
 class AppMeta {
@@ -39,7 +63,6 @@ class AppMeta {
   /// For example:
   /// com.apple.testflight
   final String? installerStore;
-  final BaseDeviceInfo deviceInfo;
 
   const AppMeta({
     required this.platform,
@@ -48,7 +71,6 @@ class AppMeta {
     required this.packageName,
     required this.buildSignature,
     required this.installerStore,
-    required this.deviceInfo,
   });
 }
 
@@ -85,7 +107,6 @@ Future<AppMeta> getCurrentVersion() async {
   } else {
     platform = AppPlatform.unknown;
   }
-  final deviceInfo = await getDeviceInfo();
   return AppMeta(
     platform: platform,
     version: Version.parse(versionText),
@@ -93,7 +114,6 @@ Future<AppMeta> getCurrentVersion() async {
     packageName: info.packageName,
     buildSignature: info.buildSignature,
     installerStore: info.installerStore,
-    deviceInfo: deviceInfo,
   );
 }
 

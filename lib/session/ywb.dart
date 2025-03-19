@@ -1,14 +1,16 @@
 import 'dart:convert';
 import 'package:crypto/crypto.dart';
 import 'package:dio/dio.dart';
-import 'package:sit/credentials/error.dart';
-import 'package:sit/credentials/init.dart';
-import 'package:sit/session/sso.dart';
-
-/// 应网办 official website
-const _ywbUrl = "https://ywb.sit.edu.cn/v1";
+import 'package:mimir/credentials/error.dart';
+import 'package:mimir/credentials/init.dart';
+import 'package:mimir/init.dart';
+import 'package:mimir/session/sso.dart';
 
 class YwbSession {
+  // ywb is behind school network, requiring VPN for access
+  // 应网办 official website
+  // static const base = "https://ywb.sit.edu.cn";
+  static const base = "https://xgfy.sit.edu.cn";
   bool isLogin = false;
   String? username;
   String? jwtToken;
@@ -18,12 +20,34 @@ class YwbSession {
     required this.dio,
   });
 
+  Future<bool> checkConnectivity({
+    // String url = "https://ywb.sit.edu.cn/v1",
+    String url = "https://xgfy.sit.edu.cn",
+  }) async {
+    try {
+      await Init.dioNoCookie.request(
+        url,
+        options: Options(
+          method: "GET",
+          sendTimeout: const Duration(milliseconds: 5000),
+          receiveTimeout: const Duration(milliseconds: 5000),
+          contentType: Headers.formUrlEncodedContentType,
+          followRedirects: false,
+          validateStatus: (status) => status! < 400,
+        ),
+      );
+      return true;
+    } catch (e) {
+      return false;
+    }
+  }
+
   Future<void> _login({
     required String username,
     required String password,
   }) async {
     final response = await dio.post(
-      "https://xgfy.sit.edu.cn/unifri-flow/login",
+      "$base/unifri-flow/login",
       data: {
         'account': username,
         'userPassword': password,
@@ -38,7 +62,7 @@ class YwbSession {
 
     if (code != 0) {
       final String errMessage = resData['msg'];
-      throw CredentialsException(type: CredentialsErrorType.accountPassword, message: '($code) $errMessage');
+      throw CredentialException(type: CredentialErrorType.accountPassword, message: '($code) $errMessage');
     }
     jwtToken = resData['data']['authorization'];
     this.username = username;
@@ -63,7 +87,7 @@ class YwbSession {
     ProgressCallback? onReceiveProgress,
   }) async {
     if (!isLogin) {
-      final credentials = CredentialsInit.storage.oaCredentials;
+      final credentials = CredentialsInit.storage.oa.credentials;
       if (credentials == null) throw OaCredentialsRequiredException(url: url);
       await _login(
         username: credentials.account,

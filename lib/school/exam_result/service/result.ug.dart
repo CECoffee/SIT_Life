@@ -1,10 +1,10 @@
 import 'package:beautiful_soup_dart/beautiful_soup.dart';
 import 'package:dio/dio.dart';
-import 'package:sit/design/animation/progress.dart';
-import 'package:sit/init.dart';
+import 'package:mimir/design/animation/progress.dart';
+import 'package:mimir/init.dart';
 
-import 'package:sit/school/entity/school.dart';
-import 'package:sit/session/ug_registration.dart';
+import 'package:mimir/school/entity/school.dart';
+import 'package:mimir/session/ug_registration.dart';
 
 import '../entity/result.ug.dart';
 
@@ -47,18 +47,17 @@ class ExamResultUgService {
         'gnmkdm': 'N305005',
         'doType': 'query',
       },
-      data: {
+      data: () => FormData.fromMap({
         // 学年名
         'xnm': year == null ? "" : year.toString(),
         // 学期名
         'xqm': info.semester.toUgRegFormField(),
         // 获取成绩最大数量
         'queryModel.showCount': 5000,
-      },
+      }),
     );
     progress.value = 0.2;
     final resultList = _parseScoreList(response.data);
-    resultList.sort((a, b) => -ExamResultUg.compareByTime(a, b));
     final perProgress = resultList.isEmpty ? 0 : 0.8 / resultList.length;
     final newResultList = await Future.wait(resultList.map((result) async {
       final resultItems = await _fetchResultItems(
@@ -89,7 +88,7 @@ class ExamResultUgService {
         method: "POST",
       ),
       queryParameters: {'gnmkdm': 'N305005'},
-      data: FormData.fromMap({
+      data: () => FormData.fromMap({
         // 班级
         'jxb_id': classId,
         // 学年名

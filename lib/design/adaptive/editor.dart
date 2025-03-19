@@ -3,8 +3,8 @@ import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_platform_widgets/flutter_platform_widgets.dart';
-import 'package:sit/design/adaptive/multiplatform.dart';
-import 'package:sit/l10n/common.dart';
+import 'package:mimir/design/adaptive/multiplatform.dart';
+import 'package:mimir/l10n/common.dart';
 import 'package:rettulf/rettulf.dart';
 
 import 'foundation.dart';
@@ -106,12 +106,14 @@ class Editor {
     BuildContext context, {
     String? desc,
     required String initial,
+    bool secure = false,
   }) async {
     final newValue = await showAdaptiveDialog(
       context: context,
       builder: (ctx) => StringEditor(
         initial: initial,
         title: desc,
+        secure: secure,
       ),
     );
     if (newValue == null) return null;
@@ -168,7 +170,7 @@ Widget _readonlyEditor(BuildContext ctx, WidgetBuilder make, {String? title}) {
           onPressed: () {
             ctx.navigator.pop(false);
           }),
-      make: (ctx) => make(ctx));
+      desc: (ctx) => make(ctx));
 }
 
 class EnumEditor<T> extends StatefulWidget {
@@ -208,7 +210,7 @@ class _EnumEditorState<T> extends State<EnumEditor<T>> {
           context.navigator.pop();
         },
       ),
-      make: (ctx) => PlatformTextButton(
+      desc: (ctx) => PlatformTextButton(
         child: current.toString().text(),
         onPressed: () async {
           final controller = FixedExtentScrollController(initialItem: initialIndex);
@@ -268,7 +270,7 @@ class _DateTimeEditorState extends State<DateTimeEditor> {
           onPressed: () {
             context.navigator.pop();
           }),
-      make: (ctx) => PlatformTextButton(
+      desc: (ctx) => PlatformTextButton(
         child: current.toString().text(),
         onPressed: () async {
           final newDate = await showDatePicker(
@@ -329,7 +331,7 @@ class _IntEditorState extends State<IntEditor> {
             onPressed: () {
               context.navigator.pop();
             }),
-        make: (ctx) => buildBody(ctx));
+        desc: (ctx) => buildBody(ctx));
   }
 
   Widget buildBody(BuildContext ctx) {
@@ -377,7 +379,11 @@ class BoolEditor extends StatefulWidget {
   final bool initial;
   final String? desc;
 
-  const BoolEditor({super.key, required this.initial, this.desc});
+  const BoolEditor({
+    super.key,
+    required this.initial,
+    this.desc,
+  });
 
   @override
   State<BoolEditor> createState() => _BoolEditorState();
@@ -389,38 +395,45 @@ class _BoolEditorState extends State<BoolEditor> {
   @override
   Widget build(BuildContext context) {
     return $Dialog$(
-        primary: $Action$(
-            text: _i18n.submit,
-            isDefault: true,
-            onPressed: () {
-              context.navigator.pop(value);
-            }),
-        secondary: $Action$(
-            text: _i18n.cancel,
-            onPressed: () {
-              context.navigator.pop();
-            }),
-        make: (ctx) => $ListTile$(
-            title: (widget.desc ?? "").text(),
-            trailing: Switch.adaptive(
-              value: value,
-              onChanged: (newValue) {
-                setState(() {
-                  value = newValue;
-                });
-              },
-            )));
+      primary: $Action$(
+        text: _i18n.submit,
+        isDefault: true,
+        onPressed: () {
+          context.navigator.pop(value);
+        },
+      ),
+      secondary: $Action$(
+        text: _i18n.cancel,
+        onPressed: () {
+          context.navigator.pop();
+        },
+      ),
+      desc: (ctx) => Material(
+        color: Colors.transparent,
+        child: SwitchListTile.adaptive(
+          title: (widget.desc ?? "").text(style: context.textTheme.bodySmall),
+          value: value,
+          onChanged: (newValue) {
+            setState(() {
+              value = newValue;
+            });
+          },
+        ),
+      ),
+    );
   }
 }
 
 class StringEditor extends StatefulWidget {
   final String initial;
   final String? title;
+  final bool secure;
 
   const StringEditor({
     super.key,
     required this.initial,
     this.title,
+    this.secure = false,
   });
 
   @override
@@ -460,9 +473,10 @@ class _StringEditorState extends State<StringEditor> {
           context.navigator.pop();
         },
       ),
-      make: (ctx) => $TextField$(
+      desc: (ctx) => PlatformTextField(
         maxLines: lines,
         controller: controller,
+        obscureText: widget.secure,
       ),
     );
   }
@@ -507,7 +521,7 @@ class _StringsEditorState extends State<StringsEditor> {
   Widget build(BuildContext context) {
     return $Dialog$(
       title: widget.title,
-      make: (ctx) => $values.map((e) => buildField(e.name, e.$value)).toList().column(mas: MainAxisSize.min),
+      desc: (ctx) => $values.map((e) => buildField(e.name, e.$value)).toList().column(mas: MainAxisSize.min),
       primary: $Action$(
           text: _i18n.submit,
           onPressed: () {

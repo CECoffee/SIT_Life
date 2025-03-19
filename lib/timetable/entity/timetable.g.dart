@@ -6,33 +6,37 @@ part of 'timetable.dart';
 // CopyWithGenerator
 // **************************************************************************
 
-abstract class _$SitTimetableCWProxy {
+abstract class _$TimetableCWProxy {
   /// This function **does support** nullification of nullable fields. All `null` values passed to `non-nullable` fields will be ignored.
   ///
   /// Usage
   /// ```dart
-  /// SitTimetable(...).copyWith(id: 12, name: "My name")
+  /// Timetable(...).copyWith(id: 12, name: "My name")
   /// ````
-  SitTimetable call({
-    Map<String, SitCourse>? courses,
+  Timetable call({
+    String? uuid,
+    Map<String, Course>? courses,
     int? lastCourseKey,
     String? name,
+    SchoolCode? schoolCode,
     DateTime? startDate,
     Campus? campus,
     int? schoolYear,
     Semester? semester,
     DateTime? lastModified,
-    List<TimetablePatchEntry>? patches,
+    DateTime? createdTime,
+    String? studentId,
+    StudentType? studentType,
     String? signature,
     int? version,
   });
 }
 
-/// Proxy class for `copyWith` functionality. This is a callable class and can be used as follows: `instanceOfSitTimetable.copyWith(...)`.
-class _$SitTimetableCWProxyImpl implements _$SitTimetableCWProxy {
-  const _$SitTimetableCWProxyImpl(this._value);
+/// Proxy class for `copyWith` functionality. This is a callable class and can be used as follows: `instanceOfTimetable.copyWith(...)`.
+class _$TimetableCWProxyImpl implements _$TimetableCWProxy {
+  const _$TimetableCWProxyImpl(this._value);
 
-  final SitTimetable _value;
+  final Timetable _value;
 
   @override
 
@@ -40,26 +44,34 @@ class _$SitTimetableCWProxyImpl implements _$SitTimetableCWProxy {
   ///
   /// Usage
   /// ```dart
-  /// SitTimetable(...).copyWith(id: 12, name: "My name")
+  /// Timetable(...).copyWith(id: 12, name: "My name")
   /// ````
-  SitTimetable call({
+  Timetable call({
+    Object? uuid = const $CopyWithPlaceholder(),
     Object? courses = const $CopyWithPlaceholder(),
     Object? lastCourseKey = const $CopyWithPlaceholder(),
     Object? name = const $CopyWithPlaceholder(),
+    Object? schoolCode = const $CopyWithPlaceholder(),
     Object? startDate = const $CopyWithPlaceholder(),
     Object? campus = const $CopyWithPlaceholder(),
     Object? schoolYear = const $CopyWithPlaceholder(),
     Object? semester = const $CopyWithPlaceholder(),
     Object? lastModified = const $CopyWithPlaceholder(),
-    Object? patches = const $CopyWithPlaceholder(),
+    Object? createdTime = const $CopyWithPlaceholder(),
+    Object? studentId = const $CopyWithPlaceholder(),
+    Object? studentType = const $CopyWithPlaceholder(),
     Object? signature = const $CopyWithPlaceholder(),
     Object? version = const $CopyWithPlaceholder(),
   }) {
-    return SitTimetable(
+    return Timetable(
+      uuid: uuid == const $CopyWithPlaceholder() || uuid == null
+          ? _value.uuid
+          // ignore: cast_nullable_to_non_nullable
+          : uuid as String,
       courses: courses == const $CopyWithPlaceholder() || courses == null
           ? _value.courses
           // ignore: cast_nullable_to_non_nullable
-          : courses as Map<String, SitCourse>,
+          : courses as Map<String, Course>,
       lastCourseKey: lastCourseKey == const $CopyWithPlaceholder() || lastCourseKey == null
           ? _value.lastCourseKey
           // ignore: cast_nullable_to_non_nullable
@@ -68,6 +80,10 @@ class _$SitTimetableCWProxyImpl implements _$SitTimetableCWProxy {
           ? _value.name
           // ignore: cast_nullable_to_non_nullable
           : name as String,
+      schoolCode: schoolCode == const $CopyWithPlaceholder() || schoolCode == null
+          ? _value.schoolCode
+          // ignore: cast_nullable_to_non_nullable
+          : schoolCode as SchoolCode,
       startDate: startDate == const $CopyWithPlaceholder() || startDate == null
           ? _value.startDate
           // ignore: cast_nullable_to_non_nullable
@@ -88,10 +104,18 @@ class _$SitTimetableCWProxyImpl implements _$SitTimetableCWProxy {
           ? _value.lastModified
           // ignore: cast_nullable_to_non_nullable
           : lastModified as DateTime,
-      patches: patches == const $CopyWithPlaceholder() || patches == null
-          ? _value.patches
+      createdTime: createdTime == const $CopyWithPlaceholder() || createdTime == null
+          ? _value.createdTime
           // ignore: cast_nullable_to_non_nullable
-          : patches as List<TimetablePatchEntry>,
+          : createdTime as DateTime,
+      studentId: studentId == const $CopyWithPlaceholder() || studentId == null
+          ? _value.studentId
+          // ignore: cast_nullable_to_non_nullable
+          : studentId as String,
+      studentType: studentType == const $CopyWithPlaceholder() || studentType == null
+          ? _value.studentType
+          // ignore: cast_nullable_to_non_nullable
+          : studentType as StudentType,
       signature: signature == const $CopyWithPlaceholder() || signature == null
           ? _value.signature
           // ignore: cast_nullable_to_non_nullable
@@ -104,20 +128,20 @@ class _$SitTimetableCWProxyImpl implements _$SitTimetableCWProxy {
   }
 }
 
-extension $SitTimetableCopyWith on SitTimetable {
-  /// Returns a callable class that can be used as follows: `instanceOfSitTimetable.copyWith(...)`.
+extension $TimetableCopyWith on Timetable {
+  /// Returns a callable class that can be used as follows: `instanceOfTimetable.copyWith(...)`.
   // ignore: library_private_types_in_public_api
-  _$SitTimetableCWProxy get copyWith => _$SitTimetableCWProxyImpl(this);
+  _$TimetableCWProxy get copyWith => _$TimetableCWProxyImpl(this);
 }
 
-abstract class _$SitCourseCWProxy {
+abstract class _$CourseCWProxy {
   /// This function **does support** nullification of nullable fields. All `null` values passed to `non-nullable` fields will be ignored.
   ///
   /// Usage
   /// ```dart
-  /// SitCourse(...).copyWith(id: 12, name: "My name")
+  /// Course(...).copyWith(id: 12, name: "My name")
   /// ````
-  SitCourse call({
+  Course call({
     int? courseKey,
     String? courseName,
     String? courseCode,
@@ -132,11 +156,11 @@ abstract class _$SitCourseCWProxy {
   });
 }
 
-/// Proxy class for `copyWith` functionality. This is a callable class and can be used as follows: `instanceOfSitCourse.copyWith(...)`.
-class _$SitCourseCWProxyImpl implements _$SitCourseCWProxy {
-  const _$SitCourseCWProxyImpl(this._value);
+/// Proxy class for `copyWith` functionality. This is a callable class and can be used as follows: `instanceOfCourse.copyWith(...)`.
+class _$CourseCWProxyImpl implements _$CourseCWProxy {
+  const _$CourseCWProxyImpl(this._value);
 
-  final SitCourse _value;
+  final Course _value;
 
   @override
 
@@ -144,9 +168,9 @@ class _$SitCourseCWProxyImpl implements _$SitCourseCWProxy {
   ///
   /// Usage
   /// ```dart
-  /// SitCourse(...).copyWith(id: 12, name: "My name")
+  /// Course(...).copyWith(id: 12, name: "My name")
   /// ````
-  SitCourse call({
+  Course call({
     Object? courseKey = const $CopyWithPlaceholder(),
     Object? courseName = const $CopyWithPlaceholder(),
     Object? courseCode = const $CopyWithPlaceholder(),
@@ -159,7 +183,7 @@ class _$SitCourseCWProxyImpl implements _$SitCourseCWProxy {
     Object? teachers = const $CopyWithPlaceholder(),
     Object? hidden = const $CopyWithPlaceholder(),
   }) {
-    return SitCourse(
+    return Course(
       courseKey: courseKey == const $CopyWithPlaceholder() || courseKey == null
           ? _value.courseKey
           // ignore: cast_nullable_to_non_nullable
@@ -208,10 +232,10 @@ class _$SitCourseCWProxyImpl implements _$SitCourseCWProxy {
   }
 }
 
-extension $SitCourseCopyWith on SitCourse {
-  /// Returns a callable class that can be used as follows: `instanceOfSitCourse.copyWith(...)`.
+extension $CourseCopyWith on Course {
+  /// Returns a callable class that can be used as follows: `instanceOfCourse.copyWith(...)`.
   // ignore: library_private_types_in_public_api
-  _$SitCourseCWProxy get copyWith => _$SitCourseCWProxyImpl(this);
+  _$CourseCWProxy get copyWith => _$CourseCWProxyImpl(this);
 }
 
 abstract class _$TimetableWeekIndexCWProxy {
@@ -268,35 +292,47 @@ extension $TimetableWeekIndexCopyWith on TimetableWeekIndex {
 // JsonSerializableGenerator
 // **************************************************************************
 
-SitTimetable _$SitTimetableFromJson(Map<String, dynamic> json) => SitTimetable(
+Timetable _$TimetableFromJson(Map<String, dynamic> json) => Timetable(
+      uuid: json['uuid'] as String? ?? _kUUid(),
       courses: (json['courses'] as Map<String, dynamic>).map(
-        (k, e) => MapEntry(k, SitCourse.fromJson(e as Map<String, dynamic>)),
+        (k, e) => MapEntry(k, Course.fromJson(e as Map<String, dynamic>)),
       ),
       lastCourseKey: (json['lastCourseKey'] as num).toInt(),
-      name: json['name'] as String,
+      name: _parseName(json['name'] as String),
+      schoolCode: $enumDecodeNullable(_$SchoolCodeEnumMap, json['schoolCode']) ?? _kSchoolCode(),
       startDate: DateTime.parse(json['startDate'] as String),
       campus: $enumDecodeNullable(_$CampusEnumMap, json['campus'], unknownValue: Campus.fengxian) ?? _defaultCampus(),
       schoolYear: (json['schoolYear'] as num).toInt(),
       semester: $enumDecode(_$SemesterEnumMap, json['semester']),
-      lastModified: json['lastModified'] == null ? _kLastModified() : DateTime.parse(json['lastModified'] as String),
-      patches: json['patches'] == null ? const [] : _patchesFromJson(json['patches'] as List?),
+      lastModified: json['lastModified'] == null ? _kNow() : DateTime.parse(json['lastModified'] as String),
+      createdTime: json['createdTime'] == null ? _kNow() : DateTime.parse(json['createdTime'] as String),
+      studentId: json['studentId'] as String? ?? _defaultStudentId(),
+      studentType: $enumDecodeNullable(_$StudentTypeEnumMap, json['studentType']) ?? _kStudentType(),
       signature: json['signature'] as String? ?? "",
-      version: (json['version'] as num?)?.toInt() ?? 1,
+      version: (json['version'] as num?)?.toInt() ?? 2,
     );
 
-Map<String, dynamic> _$SitTimetableToJson(SitTimetable instance) => <String, dynamic>{
+Map<String, dynamic> _$TimetableToJson(Timetable instance) => <String, dynamic>{
+      'uuid': instance.uuid,
       'name': instance.name,
       'startDate': instance.startDate.toIso8601String(),
       'campus': _$CampusEnumMap[instance.campus]!,
       'schoolYear': instance.schoolYear,
       'semester': _$SemesterEnumMap[instance.semester]!,
+      'schoolCode': _$SchoolCodeEnumMap[instance.schoolCode]!,
+      'studentType': _$StudentTypeEnumMap[instance.studentType]!,
       'lastCourseKey': instance.lastCourseKey,
       'signature': instance.signature,
+      'studentId': instance.studentId,
       'courses': instance.courses,
       'lastModified': instance.lastModified.toIso8601String(),
+      'createdTime': instance.createdTime.toIso8601String(),
       'version': instance.version,
-      'patches': instance.patches,
     };
+
+const _$SchoolCodeEnumMap = {
+  SchoolCode.sit: 'sit',
+};
 
 const _$CampusEnumMap = {
   Campus.fengxian: 'fengxian',
@@ -309,7 +345,12 @@ const _$SemesterEnumMap = {
   Semester.term2: 'term2',
 };
 
-SitCourse _$SitCourseFromJson(Map<String, dynamic> json) => SitCourse(
+const _$StudentTypeEnumMap = {
+  StudentType.undergraduate: 'undergraduate',
+  StudentType.postgraduate: 'postgraduate',
+};
+
+Course _$CourseFromJson(Map<String, dynamic> json) => Course(
       courseKey: (json['courseKey'] as num).toInt(),
       courseName: json['courseName'] as String,
       courseCode: json['courseCode'] as String,
@@ -329,7 +370,7 @@ SitCourse _$SitCourseFromJson(Map<String, dynamic> json) => SitCourse(
       hidden: json['hidden'] as bool? ?? false,
     );
 
-Map<String, dynamic> _$SitCourseToJson(SitCourse instance) => <String, dynamic>{
+Map<String, dynamic> _$CourseToJson(Course instance) => <String, dynamic>{
       'courseKey': instance.courseKey,
       'courseName': instance.courseName,
       'courseCode': instance.courseCode,

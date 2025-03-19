@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import 'package:sit/design/widgets/app.dart';
+import 'package:mimir/design/widget/app.dart';
 import 'package:rettulf/rettulf.dart';
 
 import "i18n.dart";
@@ -20,7 +20,7 @@ class _OaAnnounceAppCardState extends State<OaAnnounceAppCard> {
       leftActions: [
         FilledButton.icon(
           onPressed: () {
-            context.push("/oa-announce");
+            context.push("/oa/announcement");
           },
           icon: const Icon(Icons.newspaper),
           label: i18n.seeAll.text(),

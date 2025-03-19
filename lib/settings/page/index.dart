@@ -1,28 +1,24 @@
-import 'package:easy_localization/easy_localization.dart';
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:sit/credentials/entity/login_status.dart';
-import 'package:sit/credentials/init.dart';
-import 'package:sit/design/adaptive/dialog.dart';
-import 'package:sit/design/adaptive/multiplatform.dart';
-import 'package:sit/lifecycle.dart';
-import 'package:sit/login/i18n.dart';
-import 'package:sit/network/widgets/entrance.dart';
-import 'package:sit/storage/hive/init.dart';
-import 'package:sit/init.dart';
-import 'package:sit/l10n/extension.dart';
-import 'package:sit/settings/settings.dart';
-import 'package:sit/school/widgets/campus.dart';
+import 'package:mimir/agreements/entity/agreements.dart';
+import 'package:mimir/agreements/page/privacy_policy.dart';
+import 'package:mimir/credentials/entity/login_status.dart';
+import 'package:mimir/credentials/init.dart';
+import 'package:mimir/design/adaptive/dialog.dart';
+import 'package:mimir/design/adaptive/multiplatform.dart';
+import 'package:mimir/lifecycle.dart';
+import 'package:mimir/login/i18n.dart';
+import 'package:mimir/storage/hive/init.dart';
+import 'package:mimir/init.dart';
+import 'package:mimir/l10n/extension.dart';
+import 'package:mimir/settings/settings.dart';
+import 'package:mimir/school/widget/campus.dart';
 import 'package:rettulf/rettulf.dart';
-import 'package:sit/settings/dev.dart';
-import 'package:locale_names/locale_names.dart';
-import 'package:sit/utils/riverpod.dart';
 
 import '../i18n.dart';
-import '../../design/widgets/navigation.dart';
+import '../../design/widget/navigation.dart';
 
 class SettingsPage extends ConsumerStatefulWidget {
   const SettingsPage({super.key});
@@ -53,92 +49,57 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
   }
 
   List<Widget> buildEntries() {
-    final credentials = ref.watch(CredentialsInit.storage.$oaCredentials);
-    final loginStatus = ref.watch(CredentialsInit.storage.$oaLoginStatus);
-    final devOn = ref.watch(Dev.$on);
     final all = <Widget>[];
-    if (loginStatus != LoginStatus.never) {
-      all.add(const CampusSelector().padSymmetric(h: 8));
+    final agreementAccepted = ref.watch(Settings.agreements.$basicAcceptanceOf(AgreementVersion.current)) ?? false;
+    if (agreementAccepted) {
+      final oaLoginStatus = ref.watch(CredentialsInit.storage.oa.$loginStatus);
+      if (oaLoginStatus != OaLoginStatus.never) {
+        all.add(const CampusSelector().padSymmetric(h: 8));
+      }
     }
-    if (credentials != null) {
-      all.add(PageNavigationTile(
-        title: i18n.oaCredentials.oaAccount.text(),
-        subtitle: credentials.account.text(),
-        leading: const Icon(Icons.person_rounded),
-        path: "/settings/credentials",
-      ));
-    } else {
-      const oaLogin = OaLoginI18n();
-      all.add(ListTile(
-        title: oaLogin.loginOa.text(),
-        subtitle: oaLogin.neverLoggedInTip.text(),
-        leading: const Icon(Icons.person_rounded),
-        onTap: () {
-          context.go("/login");
-        },
-      ));
+    if (agreementAccepted) {
+      final oaCredentials = ref.watch(CredentialsInit.storage.oa.$credentials);
+      if (oaCredentials != null) {
+        all.add(PageNavigationTile(
+          title: i18n.oa.oaAccount.text(),
+          subtitle: oaCredentials.account.text(),
+          leading: const Icon(Icons.person_rounded),
+          path: "/settings/oa",
+        ));
+      } else {
+        const oaLogin = OaLoginI18n();
+        all.add(ListTile(
+          title: oaLogin.loginOa.text(),
+          subtitle: oaLogin.neverLoggedInTip.text(),
+          leading: const Icon(Icons.person_rounded),
+          onTap: () {
+            context.go("/oa/login");
+          },
+        ));
+      }
+      all.add(const Divider());
     }
+    all.add(const ThemeModeTile());
+    all.add(const ThemeColorTile());
     all.add(const Divider());
 
-    all.add(PageNavigationTile(
-      title: i18n.language.text(),
-      subtitle: context.locale.nativeDisplayLanguageScript.text(),
-      leading: const Icon(Icons.translate_rounded),
-      path: "/settings/language",
-    ));
-    all.add(buildThemeMode());
-    all.add(PageNavigationTile(
-      leading: const Icon(Icons.color_lens_outlined),
-      title: i18n.themeColor.text(),
-      path: "/settings/theme-color",
-    ));
-    all.add(const Divider());
-
-    if (loginStatus != LoginStatus.never) {
+    if (agreementAccepted) {
       all.add(PageNavigationTile(
         leading: const Icon(Icons.calendar_month_outlined),
         title: i18n.app.navigation.timetable.text(),
         path: "/settings/timetable",
       ));
-      if (!kIsWeb) {
-        all.add(PageNavigationTile(
-          title: i18n.app.navigation.school.text(),
-          leading: const Icon(Icons.school_outlined),
-          path: "/settings/school",
-        ));
-        all.add(PageNavigationTile(
-          title: i18n.app.navigation.life.text(),
-          leading: const Icon(Icons.spa_outlined),
-          path: "/settings/life",
-        ));
-      }
       all.add(PageNavigationTile(
-        title: i18n.app.navigation.game.text(),
-        leading: const Icon(Icons.videogame_asset),
-        path: "/settings/game",
+        title: i18n.app.navigation.school.text(),
+        leading: const Icon(Icons.school_outlined),
+        path: "/settings/school",
       ));
       all.add(const Divider());
     }
-    if (devOn) {
-      all.add(PageNavigationTile(
-        title: i18n.dev.title.text(),
-        leading: const Icon(Icons.developer_mode_outlined),
-        path: "/settings/developer",
-      ));
-    }
-    if (!kIsWeb) {
-      all.add(PageNavigationTile(
-        title: i18n.proxy.title.text(),
-        subtitle: i18n.proxy.desc.text(),
-        leading: const Icon(Icons.vpn_key),
-        path: "/settings/proxy",
-      ));
-      all.add(const NetworkToolEntranceTile());
-    }
-    if (loginStatus != LoginStatus.never) {
+    if (agreementAccepted) {
       all.add(const ClearCacheTile());
+      all.add(const WipeDataTile());
     }
-    all.add(const WipeDataTile());
     all.add(PageNavigationTile(
       title: i18n.about.title.text(),
       leading: Icon(context.icons.info),
@@ -147,8 +108,26 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
     all[all.length - 1] = all.last.safeArea(t: false);
     return all;
   }
+}
 
-  Widget buildThemeMode() {
+class ThemeColorTile extends StatelessWidget {
+  const ThemeColorTile({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return PageNavigationTile(
+      leading: const Icon(Icons.color_lens_outlined),
+      title: i18n.themeColor.text(),
+      path: "/settings/theme-color",
+    );
+  }
+}
+
+class ThemeModeTile extends ConsumerWidget {
+  const ThemeModeTile({super.key});
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
     final themeMode = ref.watch(Settings.theme.$themeMode) ?? ThemeMode.system;
     return ListTile(
       leading: switch (themeMode) {
@@ -197,7 +176,7 @@ void _onClearCache(BuildContext context) async {
     destructive: true,
   );
   if (confirm == true) {
-    await Init.cookieJar.deleteAll();
+    await Init.schoolCookieJar.deleteAll();
     await HiveInit.clearCache();
   }
 }
@@ -211,15 +190,15 @@ class WipeDataTile extends StatelessWidget {
       title: i18n.wipeDataTitle.text(),
       subtitle: i18n.wipeDataDesc.text(),
       leading: const Icon(Icons.delete_forever_rounded),
-      onTap: () {
-        _onWipeData(context);
-      },
+      onTap: _onWipeData,
     );
   }
 }
 
-Future<void> _onWipeData(BuildContext context) async {
-  final confirm = await context.showActionRequest(
+Future<void> _onWipeData() async {
+  final navigateCtx = $key.currentContext;
+  if (navigateCtx == null || !navigateCtx.mounted) return;
+  final confirm = await navigateCtx.showActionRequest(
     action: i18n.wipeDataRequest,
     desc: i18n.wipeDataRequestDesc,
     cancel: i18n.cancel,
@@ -229,16 +208,10 @@ Future<void> _onWipeData(BuildContext context) async {
     await HiveInit.clear(); // Clear storage
     await Init.initNetwork();
     await Init.initModules();
-    if (!context.mounted) return;
-    context.riverpod().read($oaOnline.notifier).state = false;
-    _gotoLogin(context);
+    if (!navigateCtx.mounted) return;
+    navigateCtx.go("/oa/login");
+    await Future.delayed(const Duration(milliseconds: 100));
+    if (!navigateCtx.mounted) return;
+    await AgreementsAcceptanceSheet.show(navigateCtx);
   }
-}
-
-void _gotoLogin(BuildContext context) {
-  final navigator = context.navigator;
-  while (navigator.canPop()) {
-    navigator.pop();
-  }
-  context.go("/login");
 }

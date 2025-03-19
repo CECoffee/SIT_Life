@@ -2,12 +2,12 @@ import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_platform_widgets/flutter_platform_widgets.dart';
 import 'package:go_router/go_router.dart';
-import 'package:sit/design/adaptive/editor.dart';
-import 'package:sit/design/adaptive/multiplatform.dart';
-import 'package:sit/design/adaptive/swipe.dart';
+import 'package:mimir/design/adaptive/editor.dart';
+import 'package:mimir/design/adaptive/multiplatform.dart';
+import 'package:mimir/design/adaptive/swipe.dart';
 import 'package:rettulf/rettulf.dart';
-import 'package:sit/l10n/time.dart';
-import 'package:sit/utils/save.dart';
+import 'package:mimir/l10n/time.dart';
+import 'package:mimir/utils/save.dart';
 
 import '../../entity/timetable.dart';
 import '../../i18n.dart';
@@ -96,7 +96,7 @@ class SitCourseEditable {
 
 class SitCourseEditorPage extends StatefulWidget {
   final String? title;
-  final SitCourse? course;
+  final Course? course;
   final SitCourseEditable editable;
 
   const SitCourseEditorPage({
@@ -247,7 +247,7 @@ class _SitCourseEditorPageState extends State<SitCourseEditorPage> {
               : i18n.editor.timeslotsSpanMultiple(from: "${timeslots.start + 1}", to: "${timeslots.end + 1}"))
           .text(),
       subtitle: [
-        const Icon(Icons.light_mode),
+        Icon(context.icons.sun),
         RangeSlider(
           values: RangeValues(timeslots.start.toDouble(), timeslots.end.toDouble()),
           max: 10,
@@ -267,7 +267,7 @@ class _SitCourseEditorPageState extends State<SitCourseEditorPage> {
             }
           },
         ).expanded(),
-        const Icon(Icons.dark_mode),
+        Icon(context.icons.moon),
       ].row(mas: MainAxisSize.min),
     );
   }
@@ -320,12 +320,14 @@ class _SitCourseEditorPageState extends State<SitCourseEditorPage> {
       trailing: PlatformIconButton(
         icon: Icon(context.icons.add),
         onPressed: () async {
-          final newTeacher = await Editor.showStringEditor(
+          var newTeacher = (await Editor.showStringEditor(
             context,
             desc: i18n.course.teacher(2),
             initial: "",
-          );
-          if (newTeacher != null && !teachers.contains(newTeacher)) {
+          ))
+              ?.trim();
+          if (newTeacher == null) return;
+          if (newTeacher.isNotEmpty && !teachers.contains(newTeacher)) {
             if (!mounted) return;
             setState(() {
               teachers.add(newTeacher);
@@ -349,22 +351,20 @@ class _SitCourseEditorPageState extends State<SitCourseEditorPage> {
   }
 
   Widget buildHidden() {
-    return ListTile(
+    return SwitchListTile.adaptive(
       title: i18n.course.displayable.text(),
-      trailing: Switch.adaptive(
-        value: !hidden,
-        onChanged: (newV) {
-          setState(() {
-            hidden = !newV;
-          });
-          markChanged();
-        },
-      ),
+      value: !hidden,
+      onChanged: (newV) {
+        setState(() {
+          hidden = !newV;
+        });
+        markChanged();
+      },
     );
   }
 
   void onSave() {
-    context.pop(SitCourse(
+    context.pop(Course(
       courseKey: widget.course?.courseKey ?? 0,
       courseName: $courseName.text,
       courseCode: $courseCode.text,

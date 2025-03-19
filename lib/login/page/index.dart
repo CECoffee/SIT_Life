@@ -1,34 +1,36 @@
-import 'dart:math';
-
-import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:sit/credentials/entity/credential.dart';
-import 'package:sit/credentials/entity/login_status.dart';
-import 'package:sit/credentials/entity/user_type.dart';
-import 'package:sit/credentials/init.dart';
-import 'package:sit/credentials/utils.dart';
-import 'package:sit/design/adaptive/dialog.dart';
-import 'package:sit/design/adaptive/multiplatform.dart';
-import 'package:sit/init.dart';
-import 'package:sit/login/utils.dart';
-import 'package:sit/r.dart';
-import 'package:sit/school/widgets/campus.dart';
+import 'package:mimir/agreements/entity/agreements.dart';
+import 'package:mimir/credentials/entity/credential.dart';
+import 'package:mimir/credentials/entity/login_status.dart';
+import 'package:mimir/credentials/entity/user_type.dart';
+import 'package:mimir/credentials/init.dart';
+import 'package:mimir/credentials/utils.dart';
+import 'package:mimir/design/adaptive/dialog.dart';
+import 'package:mimir/design/adaptive/multiplatform.dart';
+import 'package:mimir/design/animation/animated.dart';
+import 'package:mimir/login/utils.dart';
+import 'package:mimir/school/utils.dart';
+import 'package:mimir/school/widget/campus.dart';
+import 'package:mimir/agreements/widget/agreements.dart';
+import 'package:mimir/widget/markdown.dart';
 import 'package:rettulf/rettulf.dart';
-import 'package:sit/settings/dev.dart';
-import 'package:sit/settings/meta.dart';
-import 'package:sit/settings/settings.dart';
+import 'package:mimir/settings/settings.dart';
 import 'package:flutter_platform_widgets/flutter_platform_widgets.dart' hide isCupertino;
 
-import '../aggregated.dart';
 import '../i18n.dart';
-import '../widgets/forgot_pwd.dart';
+import '../widget/forgot_pwd.dart';
+import '../x.dart';
 
-const i18n = OaLoginI18n();
+const _i18n = _I18n();
 
-const _forgotLoginPasswordUrl =
+class _I18n extends OaLoginI18n {
+  const _I18n();
+}
+
+const oaForgotLoginPasswordUrl =
     "https://authserver.sit.edu.cn/authserver/getBackPasswordMainPage.do?service=https%3A%2F%2Fmyportal.sit.edu.cn%3A443%2F";
 
 class LoginPage extends ConsumerStatefulWidget {
@@ -41,65 +43,64 @@ class LoginPage extends ConsumerStatefulWidget {
 }
 
 class _LoginPageState extends ConsumerState<LoginPage> {
-  final $account = TextEditingController(text: Dev.demoMode ? R.demoModeOaCredentials.account : null);
-  final $password = TextEditingController(text: Dev.demoMode ? R.demoModeOaCredentials.password : null);
+  final $account = TextEditingController(text: null);
+  final $password = TextEditingController(text: null);
   final _formKey = GlobalKey<FormState>();
   bool isPasswordClear = false;
-  bool isLoggingIn = false;
+  bool loggingIn = false;
+  OaUserType? estimatedUserType;
+  int? admissionYear;
+
+  // bool? schoolServerConnected;
 
   @override
   void initState() {
     super.initState();
     $account.addListener(onAccountChange);
+    // checkSchoolServerConnectivity();
   }
 
   @override
   void dispose() {
     $account.dispose();
     $password.dispose();
-    $account.removeListener(onAccountChange);
     super.dispose();
   }
 
+  // Future<void> checkSchoolServerConnectivity() async {
+  //   final connected = await Init.ssoSession.checkConnectivity();
+  //   if (!mounted) return;
+  //   setState(() {
+  //     schoolServerConnected = connected;
+  //   });
+  // }
+
   void onAccountChange() {
-    final old = $account.text;
-    final uppercase = old.toUpperCase();
-    if (old != uppercase) {
-      $account.text = uppercase;
+    var account = $account.text;
+    account = account.toUpperCase();
+    if (account != $account.text) {
+      $account.text = account;
     }
+    setState(() {
+      estimatedUserType = estimateOaUserType(account);
+      admissionYear = getAdmissionYearFromStudentId(account);
+    });
   }
 
   /// 用户点击登录按钮后
   Future<void> login() async {
+    final acceptedAgreements = ref.read(Settings.agreements.$basicAcceptanceOf(AgreementVersion.current)) ?? false;
+    if (!acceptedAgreements) {
+      await showAgreementsRequired2Accept(context);
+      return;
+    }
     final account = $account.text;
     final password = $password.text;
-    if (account == R.demoModeOaCredentials.account && password == R.demoModeOaCredentials.password) {
-      await loginDemoMode();
-    } else {
-      await loginWithCredentials(account, password, formatValid: (_formKey.currentState as FormState).validate());
-    }
-  }
-
-  Future<void> loginDemoMode() async {
-    if (!mounted) return;
-    setState(() => isLoggingIn = true);
-    final rand = Random();
-    await Future.delayed(Duration(milliseconds: rand.nextInt(2000)));
-    Meta.userRealName = "Liplum";
-    Settings.lastSignature ??= "Liplum";
-    CredentialsInit.storage.oaCredentials = R.demoModeOaCredentials;
-    CredentialsInit.storage.oaLoginStatus = LoginStatus.validated;
-    CredentialsInit.storage.oaLastAuthTime = DateTime.now();
-    CredentialsInit.storage.oaUserType = OaUserType.undergraduate;
-    Dev.demoMode = true;
-    await Init.initModules();
-    if (!mounted) return;
-    setState(() => isLoggingIn = false);
-    context.go("/");
+    await loginWithCredential(account, password, formatValid: (_formKey.currentState as FormState).validate());
   }
 
   /// After the user clicks the login button
-  Future<void> loginWithCredentials(
+  Future<void> loginWithCredential(
     String account,
     String password, {
     required bool formatValid,
@@ -107,37 +108,24 @@ class _LoginPageState extends ConsumerState<LoginPage> {
     final userType = estimateOaUserType(account);
     if (!formatValid || userType == null || account.isEmpty || password.isEmpty) {
       await context.showTip(
-        title: i18n.formatError,
-        desc: i18n.validateInputAccountPwdRequest,
-        primary: i18n.close,
+        title: _i18n.formatError,
+        desc: _i18n.validateInputAccountPwdRequest,
+        primary: _i18n.close,
         serious: true,
       );
       return;
     }
 
     if (!mounted) return;
-    setState(() => isLoggingIn = true);
-    final connectionType = await Connectivity().checkConnectivity();
-    if (connectionType.contains(ConnectivityResult.none)) {
-      if (!mounted) return;
-      setState(() => isLoggingIn = false);
-      await context.showTip(
-        title: i18n.network.error,
-        desc: i18n.network.noAccessTip,
-        primary: i18n.close,
-        serious: true,
-      );
-      return;
-    }
-
+    setState(() => loggingIn = true);
     try {
-      await LoginAggregated.login(Credentials(account: account, password: password));
+      await XLogin.login(Credential(account: account, password: password));
       if (!mounted) return;
-      setState(() => isLoggingIn = false);
+      setState(() => loggingIn = false);
       context.go("/");
     } catch (error, stackTrace) {
       if (!mounted) return;
-      setState(() => isLoggingIn = false);
+      setState(() => loggingIn = false);
       if (error is Exception) {
         await handleLoginException(context: context, error: error, stackTrace: stackTrace);
       }
@@ -146,7 +134,7 @@ class _LoginPageState extends ConsumerState<LoginPage> {
 
   @override
   Widget build(BuildContext context) {
-    ref.listen(CredentialsInit.storage.$oaCredentials, (pre, next) {
+    ref.listen(CredentialsInit.storage.oa.$credentials, (pre, next) {
       if (next != null) {
         $account.text = next.account;
         $password.text = next.password;
@@ -158,48 +146,92 @@ class _LoginPageState extends ConsumerState<LoginPage> {
         // dismiss the keyboard when tap out of TextField.
         FocusScope.of(context).requestFocus(FocusNode());
       },
-      child: Scaffold(
-        appBar: AppBar(
-          title: widget.isGuarded ? i18n.loginRequired.text() : const CampusSelector(),
-          actions: [
-            PlatformIconButton(
-              icon: isCupertino ? const Icon(CupertinoIcons.settings) : const Icon(Icons.settings),
-              onPressed: () {
-                context.push("/settings");
-              },
-            ),
-          ],
-          bottom: isLoggingIn
-              ? const PreferredSize(
-                  preferredSize: Size.fromHeight(4),
-                  child: LinearProgressIndicator(),
-                )
-              : null,
-        ),
-        body: buildBody(),
-        //to avoid overflow when keyboard is up.
-        bottomNavigationBar: const ForgotPasswordButton(url: _forgotLoginPasswordUrl),
-      ),
+      child: buildBody(),
     );
   }
 
   Widget buildBody() {
-    return [
-      widget.isGuarded
-          ? const Icon(
-              Icons.person_off_outlined,
-              size: 120,
-            )
-          : i18n.welcomeHeader.text(
-              style: context.textTheme.displayMedium?.copyWith(fontWeight: FontWeight.bold),
-              textAlign: TextAlign.center,
+    if (context.isPortrait) {
+      return Scaffold(
+        appBar: AppBar(
+          title: widget.isGuarded ? _i18n.loginRequired.text() : const CampusSelector(),
+          actions: [
+            buildSettingsAction(),
+          ],
+        ),
+        floatingActionButton: loggingIn ? const CircularProgressIndicator.adaptive() : null,
+        body: [
+          buildHeader(),
+          buildLoginForm(),
+          const SizedBox(height: 10),
+          const OaLoginDisclaimerCard(),
+          AnimatedShowUp(
+            when: estimatedUserType == OaUserType.freshman,
+            builder: (ctx) => const OaLoginFreshmanSystemTipCard(),
+          ),
+          AnimatedShowUp(
+            when: estimatedUserType == OaUserType.undergraduate && admissionYear == DateTime.now().year,
+            builder: (ctx) => const OaLoginFreshmanTipCard(),
+          ),
+          buildLoginButton(),
+          const ForgotPasswordButton(url: oaForgotLoginPasswordUrl),
+        ].column(mas: MainAxisSize.min).scrolled().padH(10).center(),
+      );
+    } else {
+      return Scaffold(
+        appBar: AppBar(
+          title: widget.isGuarded ? _i18n.loginRequired.text() : _i18n.welcomeHeader.text(),
+          actions: [
+            buildSettingsAction(),
+          ],
+        ),
+        floatingActionButton: loggingIn ? const CircularProgressIndicator.adaptive() : null,
+        body: [
+          [
+            buildHeader(),
+            const CampusSelector(),
+            const OaLoginDisclaimerCard(),
+            AnimatedShowUp(
+              when: estimatedUserType == OaUserType.freshman,
+              builder: (ctx) => const OaLoginFreshmanSystemTipCard(),
             ),
-      const Padding(padding: EdgeInsets.only(top: 40)),
-      // Form field: username and password.
-      buildLoginForm(),
-      const SizedBox(height: 10),
-      buildLoginButton(),
-    ].column(mas: MainAxisSize.min).scrolled(physics: const NeverScrollableScrollPhysics()).padH(25).center();
+            AnimatedShowUp(
+              when: estimatedUserType == OaUserType.undergraduate && admissionYear == DateTime.now().year,
+              builder: (ctx) => const OaLoginFreshmanTipCard(),
+            ),
+          ].column(maa: MainAxisAlignment.start).scrolled().expanded(),
+          const VerticalDivider(),
+          [
+            buildLoginForm(),
+            buildLoginButton(),
+            const ForgotPasswordButton(url: oaForgotLoginPasswordUrl),
+          ].column().scrolled().expanded(),
+        ].row(),
+      );
+    }
+  }
+
+  Widget buildSettingsAction() {
+    return PlatformIconButton(
+      icon: isCupertino ? const Icon(CupertinoIcons.settings) : const Icon(Icons.settings),
+      onPressed: () {
+        context.push("/settings");
+      },
+    );
+  }
+
+  // Widget buildConnectivityIcon() {
+  //   return switch (schoolServerConnected) {
+  //     null => const CircularProgressIndicator.adaptive(),
+  //     true =>  const Icon(Icons.check),
+  //     false => const Icon(Icons.public_off),
+  //   };
+  // }
+
+  Widget buildHeader() {
+    return widget.isGuarded
+        ? const Icon(Icons.person_off_outlined, size: 120)
+        : Image.asset("assets/icon.png", width: 80, height: 80);
   }
 
   Widget buildLoginForm() {
@@ -214,13 +246,12 @@ class _LoginPageState extends ConsumerState<LoginPage> {
               autofillHints: const [AutofillHints.username],
               textInputAction: TextInputAction.next,
               autocorrect: false,
-              autofocus: true,
-              readOnly: isLoggingIn,
+              readOnly: loggingIn,
               enableSuggestions: false,
-              validator: (account) => studentIdValidator(account, () => i18n.invalidAccountFormat),
+              validator: (account) => studentIdValidator(account, () => _i18n.invalidAccountFormat),
               decoration: InputDecoration(
-                labelText: i18n.credentials.account,
-                hintText: i18n.accountHint,
+                labelText: _i18n.credentials.account,
+                hintText: _i18n.accountHint,
                 icon: Icon(context.icons.person),
               ),
             ),
@@ -229,22 +260,21 @@ class _LoginPageState extends ConsumerState<LoginPage> {
               keyboardType: isPasswordClear ? TextInputType.visiblePassword : null,
               autofillHints: const [AutofillHints.password],
               textInputAction: TextInputAction.send,
-              readOnly: isLoggingIn,
+              readOnly: loggingIn,
               contextMenuBuilder: (ctx, state) {
                 return AdaptiveTextSelectionToolbar.editableText(
                   editableTextState: state,
                 );
               },
               autocorrect: false,
-              autofocus: true,
               enableSuggestions: false,
               obscureText: !isPasswordClear,
               onFieldSubmitted: (inputted) async {
                 await login();
               },
               decoration: InputDecoration(
-                labelText: i18n.credentials.oaPwd,
-                hintText: i18n.oaPwdHint,
+                labelText: estimatedUserType == OaUserType.freshman ? _i18n.freshmanSystemPwd : _i18n.credentials.oaPwd,
+                hintText: estimatedUserType == OaUserType.freshman ? _i18n.freshmanSystemPwdHint : _i18n.oaPwdHint,
                 icon: Icon(context.icons.lock),
                 suffixIcon: PlatformIconButton(
                   icon: Icon(isPasswordClear ? context.icons.eyeSolid : context.icons.eyeSlashSolid),
@@ -263,11 +293,12 @@ class _LoginPageState extends ConsumerState<LoginPage> {
   }
 
   Widget buildLoginButton() {
+    final acceptedAgreements = ref.watch(Settings.agreements.$basicAcceptanceOf(AgreementVersion.current)) ?? false;
     return [
       $account >>
           (ctx, account) => FilledButton.icon(
                 // Online
-                onPressed: !isLoggingIn && account.text.isNotEmpty
+                onPressed: !loggingIn && account.text.isNotEmpty && acceptedAgreements
                     ? () {
                         // un-focus the text field.
                         FocusScope.of(context).requestFocus(FocusNode());
@@ -275,21 +306,21 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                       }
                     : null,
                 icon: const Icon(Icons.login),
-                label: i18n.login.text(),
+                label: _i18n.login.text(),
               ),
-      if (!widget.isGuarded)
+      if (!widget.isGuarded && ref.watch(CredentialsInit.storage.oa.$lastAuthTime) == null)
         $account >>
             (ctx, account) =>
                 $password >>
                 (ctx, password) => OutlinedButton(
                       // Offline
-                      onPressed: account.text.isNotEmpty || password.text.isNotEmpty
-                          ? null
-                          : () {
-                              CredentialsInit.storage.oaLoginStatus = LoginStatus.offline;
+                      onPressed: account.text.isEmpty && password.text.isEmpty && acceptedAgreements
+                          ? () {
+                              CredentialsInit.storage.oa.loginStatus = OaLoginStatus.offline;
                               context.go("/");
-                            },
-                      child: i18n.offlineModeBtn.text(),
+                            }
+                          : null,
+                      child: _i18n.offlineModeBtn.text(),
                     ),
     ].row(caa: CrossAxisAlignment.center, maa: MainAxisAlignment.spaceAround);
   }
@@ -303,4 +334,43 @@ String? studentIdValidator(String? account, String Function() invalidMessage) {
     }
   }
   return null;
+}
+
+class OaLoginDisclaimerCard extends StatelessWidget {
+  const OaLoginDisclaimerCard({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return [
+      FeaturedMarkdownWidget(
+        data: _i18n.disclaimer,
+      ),
+    ].column(caa: CrossAxisAlignment.stretch).padAll(12).inOutlinedCard();
+  }
+}
+
+class OaLoginFreshmanSystemTipCard extends StatelessWidget {
+  const OaLoginFreshmanSystemTipCard({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return [
+      FeaturedMarkdownWidget(
+        data: _i18n.freshmanSystemTip,
+      ),
+    ].column(caa: CrossAxisAlignment.stretch).padAll(12).inOutlinedCard();
+  }
+}
+
+class OaLoginFreshmanTipCard extends StatelessWidget {
+  const OaLoginFreshmanTipCard({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return [
+      FeaturedMarkdownWidget(
+        data: _i18n.freshmanTip,
+      ),
+    ].column(caa: CrossAxisAlignment.stretch).padAll(12).inOutlinedCard();
+  }
 }

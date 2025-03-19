@@ -1,9 +1,8 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:json_annotation/json_annotation.dart';
-import 'package:sit/l10n/extension.dart';
-import 'package:sit/l10n/time.dart';
-import 'package:sit/lifecycle.dart';
-import 'package:sit/utils/byte_io/byte_io.dart';
+import 'package:mimir/l10n/extension.dart';
+import 'package:mimir/l10n/time.dart';
+import 'package:mimir/lifecycle.dart';
 import 'pos.dart';
 import 'timetable_entity.dart';
 
@@ -60,26 +59,6 @@ class TimetableDayLoc {
 
   DateTime get date => dateInternal!;
 
-  void serialize(ByteWriter writer) {
-    writer.uint8(mode.index);
-    switch (mode) {
-      case TimetableDayLocMode.pos:
-        pos.serialize(writer);
-      case TimetableDayLocMode.date:
-        writer.datePacked(date, 2000);
-    }
-  }
-
-  static TimetableDayLoc deserialize(ByteReader reader) {
-    final mode = TimetableDayLocMode.values[reader.uint8()];
-    switch (mode) {
-      case TimetableDayLocMode.pos:
-        return TimetableDayLoc.pos(TimetablePos.deserialize(reader));
-      case TimetableDayLocMode.date:
-        return TimetableDayLoc.date(reader.datePacked(2000));
-    }
-  }
-
   String toDartCode() {
     return switch (mode) {
       TimetableDayLocMode.pos => "TimetableDayLoc.pos(${pos.toDartCode()})",
@@ -98,7 +77,7 @@ class TimetableDayLoc {
 
   factory TimetableDayLoc.fromJson(Map<String, dynamic> json) => _$TimetableDayLocFromJson(json);
 
-  SitTimetableDay? resolveDay(SitTimetableEntity entity) {
+  TimetableDay? resolveDay(TimetableEntity entity) {
     return switch (mode) {
       TimetableDayLocMode.pos => entity.getDay(pos.weekIndex, pos.weekday),
       TimetableDayLocMode.date => entity.getDayOn(date),

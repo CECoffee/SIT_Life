@@ -1,40 +1,56 @@
-import 'dart:typed_data';
+import 'dart:math';
 
 import 'package:copy_with_extension/copy_with_extension.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:json_annotation/json_annotation.dart';
 import 'package:meta/meta.dart';
-import 'package:sit/entity/campus.dart';
-import 'package:sit/school/entity/school.dart';
-import 'package:sit/school/entity/timetable.dart';
-import 'package:sit/settings/settings.dart';
-import 'package:sit/timetable/utils.dart';
-import 'package:sit/utils/byte_io/byte_io.dart';
+import 'package:mimir/backend/entity/user.dart';
+import 'package:mimir/credentials/entity/user_type.dart';
+import 'package:mimir/credentials/init.dart';
+import 'package:mimir/entity/campus.dart';
+import 'package:mimir/entity/uuid.dart';
+import 'package:mimir/school/entity/school.dart';
+import 'package:mimir/school/entity/timetable.dart';
+import 'package:mimir/settings/settings.dart';
+import 'package:mimir/timetable/utils.dart';
 import 'package:statistics/statistics.dart';
-
-import 'patch.dart';
+import 'package:uuid/uuid.dart';
 
 part 'timetable.g.dart';
 
-DateTime _kLastModified() => DateTime.now();
+DateTime _kNow() => DateTime.now();
 
-List<TimetablePatchEntry> _patchesFromJson(List? list) {
-  return list
-          ?.map((e) => TimetablePatchEntry.fromJson(e as Map<String, dynamic>))
-          .where((patch) => patch is TimetablePatch ? patch.type != TimetablePatchType.unknown : true)
-          .toList() ??
-      const <TimetablePatchEntry>[];
-}
+SchoolCode _kSchoolCode() => SchoolCode.sit;
+
+StudentType _kStudentType() => switch (CredentialsInit.storage.oa.userType) {
+      OaUserType.undergraduate => StudentType.undergraduate,
+      OaUserType.postgraduate => StudentType.postgraduate,
+      _ => StudentType.undergraduate,
+    };
 
 Campus _defaultCampus() {
   return Settings.campus;
 }
 
+String _defaultStudentId() {
+  return CredentialsInit.storage.oa.credentials?.account ?? "";
+}
+
+String _parseName(String name) {
+  return name.substring(0, min(Timetable.maxNameLength, name.length)).replaceAll('\n', " ");
+}
+
+String _kUUid() => const Uuid().v4();
+
 @JsonSerializable()
 @CopyWith(skipFields: true)
 @immutable
-class SitTimetable {
-  @JsonKey()
+class Timetable implements WithUuid {
+  static int maxNameLength = 50;
+  @override
+  @JsonKey(defaultValue: _kUUid)
+  final String uuid;
+  @JsonKey(fromJson: _parseName)
   final String name;
   @JsonKey()
   final DateTime startDate;
@@ -44,40 +60,49 @@ class SitTimetable {
   final int schoolYear;
   @JsonKey()
   final Semester semester;
+  @JsonKey(defaultValue: _kSchoolCode)
+  final SchoolCode schoolCode;
+  @JsonKey(defaultValue: _kStudentType)
+  final StudentType studentType;
   @JsonKey()
   final int lastCourseKey;
   @JsonKey()
   final String signature;
+  @JsonKey(defaultValue: _defaultStudentId)
+  final String studentId;
 
   /// The index is the CourseKey.
   @JsonKey()
-  final Map<String, SitCourse> courses;
+  final Map<String, Course> courses;
 
-  @JsonKey(defaultValue: _kLastModified)
+  @JsonKey(defaultValue: _kNow)
   final DateTime lastModified;
+
+  @JsonKey(defaultValue: _kNow)
+  final DateTime createdTime;
 
   @JsonKey()
   final int version;
 
-  /// Timetable patches will be processed in list order.
-  @JsonKey(fromJson: _patchesFromJson)
-  final List<TimetablePatchEntry> patches;
-
-  const SitTimetable({
+  const Timetable({
+    required this.uuid,
     required this.courses,
     required this.lastCourseKey,
     required this.name,
+    required this.schoolCode,
     required this.startDate,
     required this.campus,
     required this.schoolYear,
     required this.semester,
     required this.lastModified,
-    this.patches = const [],
+    required this.createdTime,
+    required this.studentId,
+    required this.studentType,
     this.signature = "",
-    this.version = 1,
+    this.version = 2,
   });
 
-  SitTimetable markModified() {
+  Timetable markModified() {
     return copyWith(
       lastModified: DateTime.now(),
     );
@@ -92,51 +117,67 @@ class SitTimetable {
   @override
   String toString() {
     return {
+      "uuid": uuid,
       "name": name,
       "startDate": startDate,
       "schoolYear": schoolYear,
+      "schoolCode": schoolCode,
       "semester": semester,
       "lastModified": lastModified,
+      "createdTime": createdTime,
       "signature": signature,
-      "patches": patches,
+      "studentId": studentId,
+      "studentType": studentType,
     }.toString();
   }
 
   String toDartCode() {
-    return "SitTimetable("
+    return "Timetable("
+        'uuid:"$uuid",'
         'name:"$name",'
         'signature:"$signature",'
+        'studentId:"$studentId",'
+        'schoolCode:"$schoolCode",'
+        'studentType:"$studentType",'
         "campus:$campus,"
         'startDate:DateTime.parse("$startDate"),'
-        'lastModified:DateTime.now(),'
+        'createdTime:DateTime.parse("$createdTime"),'
+        'lastModified:DateTime.parse("$lastModified"),'
         "courses:${courses.map((key, value) => MapEntry('"$key"', value.toDartCode()))},"
+        "studentId:$studentId,"
+        "studentType:$studentType,"
         "schoolYear:$schoolYear,"
         "semester:$semester,"
         "lastCourseKey:$lastCourseKey,"
         "version:$version,"
-        "patches:${patches.map((p) => p.toDartCode()).toList()},"
         ")";
   }
 
   @override
   bool operator ==(Object other) {
-    return other is SitTimetable &&
+    return other is Timetable &&
         runtimeType == other.runtimeType &&
         lastCourseKey == other.lastCourseKey &&
         version == other.version &&
+        uuid == other.uuid &&
         campus == other.campus &&
+        schoolCode == other.schoolCode &&
         schoolYear == other.schoolYear &&
         semester == other.semester &&
         name == other.name &&
         signature == other.signature &&
         startDate == other.startDate &&
+        studentId == other.studentId &&
+        studentType == other.studentType &&
         lastModified == other.lastModified &&
-        courses.equalsKeysValues(courses.keys, other.courses) &&
-        patches.equalsElements(other.patches);
+        createdTime == other.createdTime &&
+        courses.equalsKeysValues(courses.keys, other.courses);
   }
 
   @override
   int get hashCode => Object.hash(
+        version,
+        uuid,
         name,
         signature,
         lastCourseKey,
@@ -144,73 +185,35 @@ class SitTimetable {
         schoolYear,
         semester,
         startDate,
+        schoolCode,
         lastModified,
+        createdTime,
+        studentId,
+        studentType,
         Object.hashAllUnordered(courses.entries.map((e) => (e.key, e.value))),
-        Object.hashAll(patches),
-        version,
       );
 
-  factory SitTimetable.fromJson(Map<String, dynamic> json) => _$SitTimetableFromJson(json);
+  factory Timetable.fromJson(Map<String, dynamic> json) => _$TimetableFromJson(json);
 
-  Map<String, dynamic> toJson() => _$SitTimetableToJson(this);
+  Map<String, dynamic> toJson() => _$TimetableToJson(this);
 
-  void serialize(ByteWriter writer) {
-    writer.uint8(version);
-    writer.strUtf8(name, ByteLength.bit8);
-    writer.strUtf8(signature, ByteLength.bit8);
-    writer.uint8(campus.index);
-    writer.uint8(schoolYear);
-    writer.uint8(semester.index);
-    writer.uint8(lastCourseKey);
-    writer.datePacked(startDate, 2000);
-    writer.uint8(courses.length);
-    for (final course in courses.values) {
-      course.serialize(writer);
+  bool isBasicInfoEqualTo(Timetable old) {
+    if (lastCourseKey != old.lastCourseKey) return false;
+    if (courses.length != old.courses.length) return false;
+    if (!courses.keys.toSet().equalsElements(old.courses.keys.toSet())) return false;
+    for (final MapEntry(:key, value: course) in courses.entries) {
+      final oldCourse = old.courses[key];
+      if (oldCourse == null) return false;
+      if (!course.isBasicInfoEqualTo(oldCourse)) return false;
     }
-    writer.uint8(patches.length);
-    for (final patch in patches) {
-      TimetablePatchEntry.serialize(patch, writer);
-    }
-  }
-
-  static SitTimetable deserialize(ByteReader reader) {
-    // ignore: unused_local_variable
-    final revision = reader.uint8();
-    return SitTimetable(
-      name: reader.strUtf8(ByteLength.bit8),
-      signature: reader.strUtf8(ByteLength.bit8),
-      campus: Campus.values[reader.uint8()],
-      schoolYear: reader.uint8(),
-      semester: Semester.values[reader.uint8()],
-      lastCourseKey: reader.uint8(),
-      startDate: reader.datePacked(2000),
-      courses: Map.fromEntries(List.generate(reader.uint8(), (index) {
-        final course = SitCourse.deserialize(reader);
-        return MapEntry("${course.courseKey}", course);
-      })),
-      patches: List.generate(reader.uint8(), (index) {
-        return TimetablePatchEntry.deserialize(reader);
-      }),
-      lastModified: DateTime.now(),
-    );
-  }
-
-  static SitTimetable decodeByteList(Uint8List bytes) {
-    final reader = ByteReader(bytes);
-    return deserialize(reader);
-  }
-
-  static Uint8List encodeByteList(SitTimetable entry) {
-    final writer = ByteWriter(4096);
-    entry.serialize(writer);
-    return writer.build();
+    return true;
   }
 }
 
 @JsonSerializable()
 @CopyWith(skipFields: true)
 @immutable
-class SitCourse {
+class Course {
   @JsonKey()
   final int courseKey;
   @JsonKey()
@@ -243,7 +246,7 @@ class SitCourse {
   @JsonKey()
   final bool hidden;
 
-  const SitCourse({
+  const Course({
     required this.courseKey,
     required this.courseName,
     required this.courseCode,
@@ -260,12 +263,12 @@ class SitCourse {
   @override
   String toString() => "#$courseKey($courseName: $place)";
 
-  factory SitCourse.fromJson(Map<String, dynamic> json) => _$SitCourseFromJson(json);
+  factory Course.fromJson(Map<String, dynamic> json) => _$CourseFromJson(json);
 
-  Map<String, dynamic> toJson() => _$SitCourseToJson(this);
+  Map<String, dynamic> toJson() => _$CourseToJson(this);
 
   String toDartCode() {
-    return "SitCourse("
+    return "Course("
         "courseKey:$courseKey,"
         'courseName:"$courseName",'
         'courseCode:"$courseCode",'
@@ -282,13 +285,13 @@ class SitCourse {
 
   @override
   bool operator ==(Object other) {
-    return other is SitCourse &&
+    return other is Course &&
         runtimeType == other.runtimeType &&
         courseKey == other.courseKey &&
         courseName == other.courseName &&
         courseCode == other.courseCode &&
         place == other.place &&
-        weekIndices == other.weekIndices &&
+        weekIndices.equalsElements(other.weekIndices) &&
         timeslots == other.timeslots &&
         courseCredit == other.courseCredit &&
         dayIndex == other.dayIndex &&
@@ -310,45 +313,20 @@ class SitCourse {
         hidden,
       );
 
-  void serialize(ByteWriter writer) {
-    writer.uint8(courseKey);
-    writer.strUtf8(courseName, ByteLength.bit8);
-    writer.strUtf8(courseCode, ByteLength.bit8);
-    writer.strUtf8(classCode, ByteLength.bit8);
-    writer.strUtf8(place, ByteLength.bit8);
-    weekIndices.serialize(writer);
-    writer.uint8(timeslots.packedInt8());
-    writer.uint8((courseCredit * 10).toInt());
-    writer.uint8(dayIndex);
-    writer.uint8(teachers.length);
-    for (final teacher in teachers) {
-      writer.strUtf8(teacher, ByteLength.bit8);
-    }
-    writer.b(hidden);
-  }
-
-  static SitCourse deserialize(ByteReader reader) {
-    return SitCourse(
-      courseKey: reader.uint8(),
-      courseName: reader.strUtf8(ByteLength.bit8),
-      courseCode: reader.strUtf8(ByteLength.bit8),
-      classCode: reader.strUtf8(ByteLength.bit8),
-      place: reader.strUtf8(ByteLength.bit8),
-      weekIndices: TimetableWeekIndices.deserialize(reader),
-      timeslots: _unpackedInt8(reader.uint8()),
-      courseCredit: reader.uint8() * 0.1,
-      dayIndex: reader.uint8(),
-      teachers: List.generate(reader.uint8(), (index) {
-        return reader.strUtf8(ByteLength.bit8);
-      }),
-      hidden: reader.b(),
-    );
+  bool isBasicInfoEqualTo(Course old) {
+    if (courseKey != old.courseKey) return false;
+    if (courseCode != old.courseCode) return false;
+    if (place != old.place) return false;
+    if (!weekIndices.equalsElements(old.weekIndices)) return false;
+    if (dayIndex != old.dayIndex) return false;
+    if (timeslots != old.timeslots) return false;
+    return true;
   }
 }
 
 List<ClassTime> buildingTimetableOf(Campus campus, [String? place]) => getTeachingBuildingTimetable(campus, place);
 
-/// Based on [SitCourse.timeslots], compose a full-length class time.
+/// Based on [Course.timeslots], compose a full-length class time.
 /// Starts with the first part starts.
 /// Ends with the last part ends.
 ClassTime calcBeginEndTimePoint(({int start, int end}) timeslots, Campus campus, [String? place]) {
@@ -440,18 +418,6 @@ class TimetableWeekIndex {
     }
   }
 
-  void serialize(ByteWriter writer) {
-    writer.uint8(type.index);
-    writer.uint8(range.packedInt8());
-  }
-
-  static TimetableWeekIndex deserialize(ByteReader reader) {
-    return TimetableWeekIndex(
-      type: TimetableWeekIndexType.values[reader.uint8()],
-      range: _unpackedInt8(reader.uint8()),
-    );
-  }
-
   String toDartCode() {
     return "TimetableWeekIndex("
         "type:$type,"
@@ -531,19 +497,6 @@ extension type const TimetableWeekIndices(List<TimetableWeekIndex> indices) impl
     return res;
   }
 
-  void serialize(ByteWriter writer) {
-    writer.uint8(indices.length);
-    for (final index in indices) {
-      index.serialize(writer);
-    }
-  }
-
-  static TimetableWeekIndices deserialize(ByteReader reader) {
-    return TimetableWeekIndices(List.generate(reader.uint8(), (index) {
-      return TimetableWeekIndex.deserialize(reader);
-    }));
-  }
-
   factory TimetableWeekIndices.fromJson(dynamic json) {
     // for backwards support
     if (json is Map) {
@@ -602,27 +555,17 @@ String rangeToString(({int start, int end}) range) {
   }
 }
 
-extension _RangeX on ({int start, int end}) {
-  int packedInt8() {
-    return start << 4 | end;
-  }
-}
-
-({int start, int end}) _unpackedInt8(int packed) {
-  return (start: packed >> 4 & 0xF, end: packed & 0xF);
-}
-
 abstract mixin class CourseCodeIndexer {
-  Iterable<SitCourse> get courses;
+  Iterable<Course> get courses;
 
-  final _courseCode2CoursesCache = <String, List<SitCourse>>{};
+  final _courseCode2CoursesCache = <String, List<Course>>{};
 
-  List<SitCourse> getCoursesByCourseCode(String courseCode) {
+  List<Course> getCoursesByCourseCode(String courseCode) {
     final found = _courseCode2CoursesCache[courseCode];
     if (found != null) {
       return found;
     } else {
-      final res = <SitCourse>[];
+      final res = <Course>[];
       for (final course in courses) {
         if (course.courseCode == courseCode) {
           res.add(course);

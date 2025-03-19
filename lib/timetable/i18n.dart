@@ -1,6 +1,6 @@
 import 'package:easy_localization/easy_localization.dart';
-import 'package:sit/l10n/common.dart';
-import 'package:sit/school/i18n.dart';
+import 'package:mimir/l10n/common.dart';
+import 'package:mimir/school/i18n.dart';
 
 import 'entity/issue.dart';
 
@@ -16,10 +16,8 @@ class _I18n with CommonI18nMixin {
   final import = const _Import();
   final export = const _Export();
   final course = const CourseI18n();
-  final screenshot = const _Screenshot();
   final editor = const _Editor();
   final issue = const _Issue();
-  final patch = const _Patch();
   final freeTip = const _FreeTip();
   final campus = const CampusI10n();
   final settings = const _Settings();
@@ -30,11 +28,11 @@ class _I18n with CommonI18nMixin {
 
   String get startWith => "$ns.startWith".tr();
 
+  String get createdWhen => "$ns.createdWhen".tr();
+
   String get jump => "$ns.jump".tr();
 
   String get findToday => "$ns.findToday".tr();
-
-  String get focusTimetable => "$ns.focusTimetable".tr();
 
   String get signature => "$ns.signature".tr();
 
@@ -72,18 +70,8 @@ class _P13n {
 
   static const ns = "${_I18n.ns}.p13n";
   final cell = const _CellStyle();
-  final palette = const _Palette();
-  final background = const _Background();
 
   String get title => "$ns.title".tr();
-
-  ({String name, String place, List<String> teachers}) livePreview(int index) {
-    return (
-      name: "$ns.livePreview.$index.name".tr(),
-      place: "$ns.livePreview.$index.place".tr(),
-      teachers: "$ns.livePreview.$index.teachers".tr().split(","),
-    );
-  }
 }
 
 class _CellStyle {
@@ -106,88 +94,6 @@ class _CellStyle {
   String get harmonizeDesc => "$ns.harmonize.desc".tr();
 
   String get alpha => "$ns.alpha".tr();
-}
-
-class _Palette {
-  const _Palette();
-
-  static const ns = "${_P13n.ns}.palette";
-
-  String get title => "$ns.title".tr();
-
-  String get fab => "$ns.fab".tr();
-
-  String get customTab => "$ns.tab.custom".tr();
-
-  String get builtinTab => "$ns.tab.builtin".tr();
-
-  String get infoTab => "$ns.tab.info".tr();
-
-  String get colorsTab => "$ns.tab.colors".tr();
-
-  String get newPaletteName => "$ns.newPaletteName".tr();
-
-  String get deleteRequest => "$ns.deleteRequest".tr();
-
-  String get deleteRequestDesc => "$ns.deleteRequestDesc".tr();
-
-  String get addColor => "$ns.addColor".tr();
-
-  String get name => "$ns.name".tr();
-
-  String get namePlaceholder => "$ns.namePlaceholder".tr();
-
-  String get author => "$ns.author".tr();
-
-  String get authorPlaceholder => "$ns.authorPlaceholder".tr();
-
-  String get color => "$ns.color".tr();
-
-  String get details => "$ns.details".tr();
-}
-
-class _Background {
-  const _Background();
-
-  static const ns = "${_P13n.ns}.background";
-
-  String get title => "$ns.title".tr();
-
-  String get pickTip => "$ns.pickTip".tr();
-
-  String get selectedImage => "$ns.selectedImage".tr();
-
-  String get imageURL => "$ns.imageURL".tr();
-
-  String get invalidURL => "$ns.invalidURL".tr();
-
-  String get invalidURLDesc => "$ns.invalidURLDesc".tr();
-
-  String get opacity => "$ns.opacity".tr();
-
-  String get repeat => "$ns.repeat.title".tr();
-
-  String get repeatDesc => "$ns.repeat.desc".tr();
-
-  String get antialias => "$ns.antialias.title".tr();
-
-  String get antialiasDesc => "$ns.antialias.desc".tr();
-}
-
-class _Screenshot {
-  const _Screenshot();
-
-  static const ns = "${_I18n.ns}.screenshot";
-
-  String get title => "$ns.title".tr();
-
-  String get screenshot => "$ns.screenshot".tr();
-
-  String get take => "$ns.take".tr();
-
-  String get enableBackground => "$ns.enableBackground.title".tr();
-
-  String get enableBackgroundDesc => "$ns.enableBackground.desc".tr();
 }
 
 class _Import {
@@ -213,6 +119,8 @@ class _Import {
 
   String get failedDesc => "$ns.failedDesc".tr();
 
+  String get networkFailedDesc => "$ns.networkFailedDesc".tr();
+
   String get failedTip => "$ns.failedTip".tr();
 
   String get tryImportBtn => "$ns.tryImportBtn".tr();
@@ -231,6 +139,20 @@ class _Import {
         "yearStart": yearStart,
         "yearEnd": yearEnd,
       });
+
+  String get fileSystemError => "$ns.fileSystemError.title".tr();
+
+  String get formatError => "$ns.formatError.title".tr();
+
+  String get formatErrorDesc => "$ns.formatError.desc".tr();
+
+  String get alreadyLatest => "$ns.alreadyLatest.title".tr();
+
+  String get alreadyLatestDesc => "$ns.alreadyLatest.desc".tr();
+
+  String get updateAvailable => "$ns.updateAvailable.title".tr();
+
+  String get updateAvailableDesc => "$ns.updateAvailable.desc".tr();
 }
 
 class _Editor {
@@ -280,59 +202,6 @@ extension TimetableIssueTypeI18nX on TimetableIssueType {
   String l10n() => "${_Issue.ns}.builtin.$name.title".tr();
 
   String l10nDesc() => "${_Issue.ns}.builtin.$name.desc".tr();
-}
-
-class _Patch {
-  const _Patch();
-
-  static const ns = "${_I18n.ns}.patch";
-
-  String get title => "$ns.title".tr();
-
-  String get prefabs => "$ns.prefabs".tr();
-
-  String get defaultName => "$ns.defaultName".tr();
-
-  String get unpack => "$ns.unpack".tr();
-
-  String get noPatches => "$ns.noPatches".tr();
-
-  String get noPatchesTip => "$ns.noPatchesTip".tr();
-
-  String get patchSetName => "$ns.patchSetName".tr();
-
-  String get dateOutOfRangeTip => "$ns.dateOutOfRangeTip".tr();
-
-  String removeDay(String day) => "$ns.removeDay".tr(namedArgs: {
-        "day": day,
-      });
-
-  String swapDays(String a, String b) => "$ns.swapDays".tr(namedArgs: {
-        "a": a,
-        "b": b,
-      });
-
-  String copyDay(String source, String target) => "$ns.copyDay".tr(namedArgs: {
-        "source": source,
-        "target": target,
-      });
-
-  String moveDay(String source, String target) => "$ns.moveDay".tr(namedArgs: {
-        "source": source,
-        "target": target,
-      });
-
-  String get moveSource => "$ns.moveSource".tr();
-
-  String get moveTarget => "$ns.moveTarget".tr();
-
-  String get copySource => "$ns.copySource".tr();
-
-  String get copyTarget => "$ns.copyTarget".tr();
-
-  String get swappedDay => "$ns.swappedDay".tr();
-
-  String get removedDay => "$ns.removedDay".tr();
 }
 
 class _Export {
@@ -404,6 +273,10 @@ class _Settings {
 
   String get autoUseImportedDesc => "$ns.autoUseImported.desc".tr();
 
+  String get showTimetableNavigation => "$ns.showTimetableNavigation.title".tr();
+
+  String get showTimetableNavigationDesc => "$ns.showTimetableNavigation.desc".tr();
+
   String get palette => "$ns.palette.title".tr();
 
   String get paletteDesc => "$ns.palette.desc".tr();
@@ -412,11 +285,11 @@ class _Settings {
 
   String get cellStyleDesc => "$ns.cellStyle.desc".tr();
 
-  String get background => "$ns.background.title".tr();
-
-  String get backgroundDesc => "$ns.background.desc".tr();
-
   String get quickLookLessonOnTap => "$ns.quickLookLessonOnTap.title".tr();
 
   String get quickLookLessonOnTapDesc => "$ns.quickLookLessonOnTap.desc".tr();
+
+  String get autoSyncTimetable => "$ns.autoSyncTimetable.title".tr();
+
+  String get autoSyncTimetableDesc => "$ns.autoSyncTimetable.desc".tr();
 }

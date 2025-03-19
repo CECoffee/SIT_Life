@@ -1,18 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:sit/credentials/entity/login_status.dart';
-import 'package:sit/credentials/entity/user_type.dart';
-import 'package:sit/credentials/init.dart';
-import 'package:sit/school/class2nd/index.dart';
-import 'package:sit/school/event.dart';
-import 'package:sit/school/exam_arrange/index.dart';
-import 'package:sit/school/exam_result/index.pg.dart';
-import 'package:sit/school/exam_result/index.ug.dart';
-import 'package:sit/school/library/index.dart';
-import 'package:sit/school/oa_announce/index.dart';
-import 'package:sit/school/yellow_pages/index.dart';
-import 'package:sit/school/ywb/index.dart';
+import 'package:mimir/credentials/entity/user_type.dart';
+import 'package:mimir/credentials/init.dart';
+import 'package:mimir/school/electricity/card.dart';
+import 'package:mimir/school/event.dart';
+import 'package:mimir/school/exam_arrange/card.dart';
+import 'package:mimir/school/exam_result/card.pg.dart';
+import 'package:mimir/school/exam_result/card.ug.dart';
+import 'package:mimir/school/expense_records/card.dart';
+import 'package:mimir/school/oa_announce/index.dart';
+import 'package:mimir/school/ywb/index.dart';
 import 'package:rettulf/rettulf.dart';
 import 'i18n.dart';
 
@@ -26,8 +24,6 @@ class SchoolPage extends ConsumerStatefulWidget {
 class _SchoolPageState extends ConsumerState<SchoolPage> {
   @override
   Widget build(BuildContext context) {
-    final userType = ref.watch(CredentialsInit.storage.$oaUserType);
-    final loginStatus = ref.watch(CredentialsInit.storage.$oaLoginStatus);
     return Scaffold(
       resizeToAvoidBottomInset: false,
       body: NestedScrollView(
@@ -37,6 +33,8 @@ class _SchoolPageState extends ConsumerState<SchoolPage> {
             SliverOverlapAbsorber(
               handle: NestedScrollView.sliverOverlapAbsorberHandleFor(context),
               sliver: SliverAppBar(
+                floating: true,
+                snap: true,
                 title: i18n.navigation.text(),
                 forceElevated: innerBoxIsScrolled,
               ),
@@ -52,39 +50,17 @@ class _SchoolPageState extends ConsumerState<SchoolPage> {
           },
           child: CustomScrollView(
             slivers: [
-              if (loginStatus != LoginStatus.never) ...[
-                if (userType?.capability.enableClass2nd == true)
-                  const SliverToBoxAdapter(
-                    child: Class2ndAppCard(),
-                  ),
-                if (userType?.capability.enableExamArrange == true)
-                  const SliverToBoxAdapter(
-                    child: ExamArrangeAppCard(),
-                  ),
-                if (userType?.capability.enableExamResult == true)
-                  if (userType == OaUserType.undergraduate)
-                    const SliverToBoxAdapter(
-                      child: ExamResultUgAppCard(),
-                    )
-                  else if (userType == OaUserType.postgraduate)
-                    const SliverToBoxAdapter(
-                      child: ExamResultPgAppCard(),
-                    ),
-              ],
-              if (loginStatus != LoginStatus.never)
-                const SliverToBoxAdapter(
-                  child: OaAnnounceAppCard(),
-                ),
-              if (loginStatus != LoginStatus.never)
-                const SliverToBoxAdapter(
-                  child: YwbAppCard(),
-                ),
-              const SliverToBoxAdapter(
-                child: LibraryAppCard(),
-              ),
-              const SliverToBoxAdapter(
-                child: YellowPagesAppCard(),
-              ),
+              SliverList.list(children: [
+                const ExpenseRecordsAppCard(),
+                const ElectricityBalanceAppCard(),
+                const ExamArrangeAppCard(),
+                if (ref.watch(CredentialsInit.storage.oa.$userType) == OaUserType.undergraduate)
+                  const ExamResultUgAppCard(),
+                if (ref.watch(CredentialsInit.storage.oa.$userType) == OaUserType.postgraduate)
+                  const ExamResultPgAppCard(),
+                const OaAnnounceAppCard(),
+                const YwbAppCard(),
+              ]),
             ],
           ),
         ),

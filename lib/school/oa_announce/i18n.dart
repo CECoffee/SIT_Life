@@ -1,5 +1,5 @@
 import 'package:easy_localization/easy_localization.dart';
-import 'package:sit/l10n/common.dart';
+import 'package:mimir/l10n/common.dart';
 
 const i18n = _I18n();
 
@@ -18,10 +18,6 @@ class _I18n with CommonI18nMixin {
   String get downloadFailed => "$ns.downloadFailed".tr();
 
   String get downloading => "$ns.downloading".tr();
-
-  String get infoTab => "$ns.tab.info".tr();
-
-  String get contentTab => "$ns.tab.content".tr();
 }
 
 class _Info {

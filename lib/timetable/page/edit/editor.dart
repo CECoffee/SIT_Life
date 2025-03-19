@@ -2,23 +2,23 @@ import 'dart:async';
 
 import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_platform_widgets/flutter_platform_widgets.dart';
 import 'package:go_router/go_router.dart';
-import 'package:sit/design/adaptive/foundation.dart';
-import 'package:sit/design/adaptive/multiplatform.dart';
-import 'package:sit/design/adaptive/swipe.dart';
-import 'package:sit/design/widgets/card.dart';
-import 'package:sit/design/widgets/expansion_tile.dart';
-import 'package:sit/entity/campus.dart';
-import 'package:sit/l10n/extension.dart';
+import 'package:mimir/design/adaptive/foundation.dart';
+import 'package:mimir/design/adaptive/multiplatform.dart';
+import 'package:mimir/design/adaptive/swipe.dart';
+import 'package:mimir/design/widget/card.dart';
+import 'package:mimir/design/widget/expansion_tile.dart';
+import 'package:mimir/entity/campus.dart';
+import 'package:mimir/l10n/extension.dart';
 import 'package:rettulf/rettulf.dart';
-import 'package:sit/l10n/time.dart';
-import 'package:sit/school/widgets/course.dart';
-import 'package:sit/settings/dev.dart';
-import 'package:sit/settings/settings.dart';
+import 'package:mimir/l10n/time.dart';
+import 'package:mimir/school/widget/course.dart';
+import 'package:mimir/settings/settings.dart';
 import '../../entity/issue.dart';
-import '../../widgets/issue.dart';
-import 'package:sit/utils/save.dart';
+import '../../widget/issue.dart';
+import 'package:mimir/utils/save.dart';
 
 import '../../entity/timetable.dart';
 import '../../i18n.dart';
@@ -26,7 +26,7 @@ import 'course_editor.dart';
 import '../preview.dart';
 
 class TimetableEditorPage extends StatefulWidget {
-  final SitTimetable timetable;
+  final Timetable timetable;
 
   const TimetableEditorPage({
     super.key,
@@ -157,7 +157,7 @@ class _TimetableEditorPageState extends State<TimetableEditorPage> {
       title: i18n.course.campus.text(),
       subtitle: Campus.values
           .map((c) => ChoiceChip(
-                label: c.l10nName().text(),
+                label: c.l10n().text(),
                 selected: c == campus,
                 onSelected: (value) {
                   setState(() {
@@ -205,7 +205,7 @@ class _TimetableEditorPageState extends State<TimetableEditorPage> {
       title: i18n.editor.addCourse.text(),
       trailing: Icon(context.icons.add),
       onTap: () async {
-        final newCourse = await context.showSheet<SitCourse>(
+        final newCourse = await context.showSheet<Course>(
           (ctx) => SitCourseEditorPage(
             title: i18n.editor.newCourse,
             course: null,
@@ -217,7 +217,7 @@ class _TimetableEditorPageState extends State<TimetableEditorPage> {
     );
   }
 
-  void onCourseChanged(SitCourse old, SitCourse newValue) {
+  void onCourseChanged(Course old, Course newValue) {
     markChanged();
     final key = "${newValue.courseKey}";
     if (courses.containsKey(key)) {
@@ -243,7 +243,7 @@ class _TimetableEditorPageState extends State<TimetableEditorPage> {
     }
   }
 
-  void onCourseAdded(SitCourse course) {
+  void onCourseAdded(Course course) {
     markChanged();
     course = course.copyWith(
       courseKey: lastCourseKey++,
@@ -253,7 +253,7 @@ class _TimetableEditorPageState extends State<TimetableEditorPage> {
     });
   }
 
-  void onCourseRemoved(SitCourse course) {
+  void onCourseRemoved(Course course) {
     final key = "${course.courseKey}";
     if (courses.containsKey(key)) {
       setState(() {
@@ -293,7 +293,7 @@ class _TimetableEditorPageState extends State<TimetableEditorPage> {
     );
   }
 
-  SitTimetable buildTimetable() {
+  Timetable buildTimetable() {
     final signature = $signature.text.trim();
     return widget.timetable.copyWith(
       name: $name.text,
@@ -306,7 +306,7 @@ class _TimetableEditorPageState extends State<TimetableEditorPage> {
     );
   }
 
-  void setFromTimetable(SitTimetable timetable) {
+  void setFromTimetable(Timetable timetable) {
     setState(() {
       $name.text = timetable.name;
       $startDate.value = timetable.startDate;
@@ -335,7 +335,11 @@ class _TimetableEditorPageState extends State<TimetableEditorPage> {
         children: [
           TextFormField(
             controller: $name,
-            maxLines: 1,
+            maxLines: 2,
+            inputFormatters: [
+              LengthLimitingTextInputFormatter(Timetable.maxNameLength),
+              FilteringTextInputFormatter.deny("\n"),
+            ],
             decoration: InputDecoration(
               labelText: i18n.editor.name,
               border: const OutlineInputBorder(),
@@ -363,13 +367,13 @@ Future<DateTime?> _pickTimetableStartDate(
 }
 
 class TimetableEditableCourseCard extends StatelessWidget {
-  final SitCourse template;
-  final List<SitCourse> courses;
+  final Course template;
+  final List<Course> courses;
   final Campus campus;
   final Color? color;
-  final void Function(SitCourse old, SitCourse newValue)? onCourseChanged;
-  final void Function(SitCourse)? onCourseAdded;
-  final void Function(SitCourse)? onCourseRemoved;
+  final void Function(Course old, Course newValue)? onCourseChanged;
+  final void Function(Course)? onCourseAdded;
+  final void Function(Course)? onCourseRemoved;
 
   const TimetableEditableCourseCard({
     super.key,
@@ -421,7 +425,7 @@ class TimetableEditableCourseCard extends StatelessWidget {
           icon: Icon(context.icons.edit),
           padding: EdgeInsets.zero,
           onPressed: () async {
-            final newTemplate = await context.showSheet<SitCourse>(
+            final newTemplate = await context.showSheet<Course>(
               (context) => SitCourseEditorPage(
                 title: i18n.editor.editCourse,
                 editable: const SitCourseEditable.template(),
@@ -452,7 +456,6 @@ class TimetableEditableCourseCard extends StatelessWidget {
             isThreeLine: true,
             visualDensity: VisualDensity.compact,
             enabled: !course.hidden,
-            leading: Dev.on ? "${course.courseKey}".text() : null,
             title: course.place.text(),
             subtitle: [
               course.teachers.join(", ").text(),
@@ -463,7 +466,7 @@ class TimetableEditableCourseCard extends StatelessWidget {
               icon: Icon(context.icons.edit),
               padding: EdgeInsets.zero,
               onPressed: () async {
-                final newItem = await context.showSheet<SitCourse>(
+                final newItem = await context.showSheet<Course>(
                   (context) => SitCourseEditorPage(
                     title: i18n.editor.editCourse,
                     course: course,
@@ -485,11 +488,11 @@ class TimetableEditableCourseCard extends StatelessWidget {
   }
 }
 
-extension _SitCourseX on SitCourse {
-  SitCourse createSubItem({
+extension _SitCourseX on Course {
+  Course createSubItem({
     required int courseKey,
   }) {
-    return SitCourse(
+    return Course(
       courseKey: courseKey,
       courseName: courseName,
       courseCode: courseCode,

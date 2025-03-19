@@ -1,27 +1,27 @@
 import 'package:easy_localization/easy_localization.dart';
-import 'package:sit/credentials/i18n.dart';
-import 'package:sit/l10n/common.dart';
+import 'package:mimir/credentials/i18n.dart';
+import 'package:mimir/l10n/common.dart';
 
-class CommonLoginI18n with CommonI18nMixin {
-  const CommonLoginI18n();
+class CommonAuthI18n with CommonAuthI18nMixin, CommonI18nMixin {
+  const CommonAuthI18n();
+}
 
-  static const ns = "login";
-  final network = const NetworkI18n();
-  final credentials = const CredentialsI18n();
+mixin class CommonAuthI18nMixin {
+  static const ns = "auth";
+
+  String get signIn => "$ns.signIn".tr();
+
+  String get signUp => "$ns.signUp".tr();
+
+  String get signOut => "$ns.signOut".tr();
 
   String get login => "$ns.login".tr();
 
   String get forgotPwd => "$ns.forgotPwd".tr();
 
-  String get credentialsValidatedTip => "$ns.credentialsValidatedTip".tr();
-
   String get formatError => "$ns.formatError".tr();
 
   String get validateInputAccountPwdRequest => "$ns.validateInputAccountPwdRequest".tr();
-
-  String get loggedInTip => "$ns.loggedInTip".tr();
-
-  String get notLoggedIn => "$ns.notLoggedIn".tr();
 
   String get invalidAccountFormat => "$ns.invalidAccountFormat".tr();
 
@@ -32,13 +32,12 @@ class CommonLoginI18n with CommonI18nMixin {
   String get unknownAuthErrorTip => "$ns.unknownAuthErrorTip".tr();
 }
 
-class OaLoginI18n extends CommonLoginI18n {
+class OaLoginI18n extends CommonAuthI18n {
   const OaLoginI18n();
 
-  static const ns = "${CommonLoginI18n.ns}.oa";
+  static const ns = "oa.login";
 
-  @override
-  OaCredentialsI18n get credentials => const OaCredentialsI18n();
+  final credentials = const OaCredentialsI18n();
 
   String get welcomeHeader => "$ns.welcomeHeader".tr();
 
@@ -48,9 +47,19 @@ class OaLoginI18n extends CommonLoginI18n {
 
   String get oaPwdHint => "$ns.oaPwdHint".tr();
 
+  String get freshmanSystemPwd => "$ns.freshmanSystemPwd".tr();
+
+  String get freshmanSystemPwdHint => "$ns.freshmanSystemPwdHint".tr();
+
   String get schoolServerUnconnectedTip => "$ns.schoolServerUnconnectedTip".tr();
 
   String get loginRequired => "$ns.loginRequired".tr();
 
   String get neverLoggedInTip => "$ns.neverLoggedInTip".tr();
+
+  String get disclaimer => "$ns.disclaimer".tr();
+
+  String get freshmanTip => "$ns.freshmanTip".tr();
+
+  String get freshmanSystemTip => "$ns.freshmanSystemTip".tr();
 }

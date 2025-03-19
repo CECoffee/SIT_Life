@@ -1,6 +1,6 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:json_annotation/json_annotation.dart';
-import 'package:sit/storage/hive/type_id.dart';
+import 'package:mimir/storage/hive/type_id.dart';
 
 part 'school.g.dart';
 
@@ -39,6 +39,9 @@ enum Semester implements Comparable<Semester> {
       '': Semester.all,
       '3': Semester.term1,
       '12': Semester.term2,
+      // for compatibility
+      '1': Semester.term1,
+      '2': Semester.term2,
     };
     return mapping[field]!;
   }
@@ -109,6 +112,18 @@ class SemesterInfo implements Comparable<SemesterInfo> {
     }
     return 0;
   }
+}
+
+@JsonEnum()
+enum StudentType {
+  undergraduate,
+  postgraduate,
+  ;
+
+  static final name2enum = Map.fromEntries(values.map((v) => MapEntry(v.name, v)));
+
+  String l10n() => "school.studentType.$name".tr();
+  static String l10nTitle() => "school.studentType.title".tr();
 }
 
 @HiveType(typeId: CacheHiveType.courseCat)

@@ -1,6 +1,6 @@
 import 'package:collection/collection.dart';
-import 'package:sit/school/entity/school.dart';
-import 'package:sit/school/exam_result/entity/result.ug.dart';
+import 'package:mimir/school/entity/school.dart';
+import 'package:mimir/school/exam_result/entity/result.ug.dart';
 
 class ExamResultGpaItem {
   // for multi-selection
@@ -41,7 +41,7 @@ class ExamResultGpaItem {
       ...resit.map((e) => e.score),
       ...retake.map((e) => e.score),
       initial.score,
-    ].whereNotNull().maxOrNull;
+    ].nonNulls.maxOrNull;
   }
 
   bool get passed {

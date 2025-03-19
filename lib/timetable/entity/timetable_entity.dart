@@ -1,41 +1,40 @@
 import 'package:copy_with_extension/copy_with_extension.dart';
 import 'package:flutter/foundation.dart';
-import 'package:sit/entity/campus.dart';
-import 'package:sit/l10n/time.dart';
-import 'package:sit/school/entity/school.dart';
-import 'package:sit/school/entity/timetable.dart';
-import 'package:sit/school/utils.dart';
-import 'package:sit/timetable/utils.dart';
+import 'package:mimir/entity/campus.dart';
+import 'package:mimir/l10n/time.dart';
+import 'package:mimir/school/entity/school.dart';
+import 'package:mimir/school/entity/timetable.dart';
+import 'package:mimir/school/utils.dart';
+import 'package:mimir/timetable/utils.dart';
 import 'package:collection/collection.dart';
-import 'package:sit/utils/date.dart';
-import 'patch.dart';
-import 'platte.dart';
+import 'package:mimir/utils/date.dart';
+import '../p13n/entity/palette.dart';
 import 'timetable.dart';
 
 part "timetable_entity.g.dart";
 
 /// The entity to display.
-class SitTimetableEntity with SitTimetablePaletteResolver, CourseCodeIndexer {
+class TimetableEntity with TimetablePaletteResolver, CourseCodeIndexer {
   @override
-  final SitTimetable type;
+  final Timetable type;
 
   @override
-  Iterable<SitCourse> get courses => type.courses.values;
+  Iterable<Course> get courses => type.courses.values;
 
-  final List<SitTimetableDay> days;
+  final List<TimetableDay> days;
 
   /// The Default number of weeks is 20.
-  List<SitTimetableWeek> weeks() => List.generate(maxWeekLength, (index) => getWeek(index));
+  List<TimetableWeek> weeks() => List.generate(maxWeekLength, (index) => getWeek(index));
 
-  SitTimetableWeek getWeek(int weekIndex) {
-    return SitTimetableWeek(days.sublist(weekIndex * 7, weekIndex * 7 + 7));
+  TimetableWeek getWeek(int weekIndex) {
+    return TimetableWeek(days.sublist(weekIndex * 7, weekIndex * 7 + 7));
   }
 
-  SitTimetableDay getDay(int weekIndex, Weekday weekday) {
+  TimetableDay getDay(int weekIndex, Weekday weekday) {
     return days[weekIndex * 7 + weekday.index];
   }
 
-  SitTimetableEntity({
+  TimetableEntity({
     required this.type,
     required this.days,
   }) {
@@ -56,11 +55,11 @@ class SitTimetableEntity with SitTimetablePaletteResolver, CourseCodeIndexer {
 
   String get signature => type.signature;
 
-  SitTimetableDay? getDaySinceStart(int days) {
+  TimetableDay? getDaySinceStart(int days) {
     return this.days[days - 1];
   }
 
-  SitTimetableWeek? getWeekOn(DateTime date) {
+  TimetableWeek? getWeekOn(DateTime date) {
     if (startDate.isAfter(date)) return null;
     final diff = date.difference(startDate);
     if (diff.inDays > maxWeekLength * 7) return null;
@@ -69,7 +68,7 @@ class SitTimetableEntity with SitTimetablePaletteResolver, CourseCodeIndexer {
     return getWeek(weekIndex);
   }
 
-  SitTimetableDay? getDayOn(DateTime date) {
+  TimetableDay? getDayOn(DateTime date) {
     if (startDate.isAfter(date)) return null;
     final diff = date.difference(startDate);
     if (diff.inDays > maxWeekLength * 7) return null;
@@ -77,25 +76,25 @@ class SitTimetableEntity with SitTimetablePaletteResolver, CourseCodeIndexer {
   }
 }
 
-extension type SitTimetableWeek(List<SitTimetableDay> days) {
+extension type TimetableWeek(List<TimetableDay> days) {
   int get index => days.first.weekIndex;
 
   bool get isFree => days.every((day) => day.isFree);
 
-  SitTimetableDay operator [](Weekday weekday) => days[weekday.index];
+  TimetableDay operator [](Weekday weekday) => days[weekday.index];
 
-  operator []=(Weekday weekday, SitTimetableDay day) => days[weekday.index] = day;
+  operator []=(Weekday weekday, TimetableDay day) => days[weekday.index] = day;
 }
 
 /// Lessons in the same timeslot.
 @CopyWith(skipFields: true)
-class SitTimetableLessonSlot {
-  late final SitTimetableDay parent;
-  final List<SitTimetableLessonPart> lessons;
+class TimetableLessonSlot {
+  late final TimetableDay parent;
+  final List<TimetableLessonPart> lessons;
 
-  SitTimetableLessonSlot({required this.lessons});
+  TimetableLessonSlot({required this.lessons});
 
-  SitTimetableLessonPart? lessonAt(int index) {
+  TimetableLessonPart? lessonAt(int index) {
     return lessons.elementAtOrNull(index);
   }
 
@@ -113,8 +112,8 @@ String _formatTime(DateTime date) {
   return "${date.year}/${date.month}/${date.day} ${date.hour}:${date.minute}";
 }
 
-class SitTimetableDay {
-  late final SitTimetableEntity parent;
+class TimetableDay {
+  late final TimetableEntity parent;
 
   final int weekIndex;
   final Weekday weekday;
@@ -122,14 +121,14 @@ class SitTimetableDay {
   /// The Default number of lessons in one day is 11. But it can be extended.
   /// For example,
   /// A Timeslot could contain one or more lesson.
-  final List<SitTimetableLessonSlot> slots;
+  final List<TimetableLessonSlot> slots;
 
-  List<SitTimetableLessonSlot> get timeslot2LessonSlot => UnmodifiableListView(slots);
+  List<TimetableLessonSlot> get timeslot2LessonSlot => UnmodifiableListView(slots);
 
-  late final Set<SitCourse> _associatedCourses =
+  late final Set<Course> _associatedCourses =
       slots.map((slot) => slot.lessons).flattened.map((part) => part.course).toSet();
 
-  Set<SitCourse> get associatedCourses => UnmodifiableSetView(_associatedCourses);
+  Set<Course> get associatedCourses => UnmodifiableSetView(_associatedCourses);
 
   bool _frozen = false;
 
@@ -146,33 +145,33 @@ class SitTimetableDay {
         weekday: weekday,
       );
 
-  SitTimetableDay({
+  TimetableDay({
     required int weekIndex,
     required Weekday weekday,
-    required List<SitTimetableLessonSlot> timeslot2LessonSlot,
+    required List<TimetableLessonSlot> timeslot2LessonSlot,
   }) : this._internal(weekIndex, weekday, List.of(timeslot2LessonSlot));
 
-  SitTimetableDay._internal(this.weekIndex, this.weekday, this.slots) {
+  TimetableDay._internal(this.weekIndex, this.weekday, this.slots) {
     for (final lessonSlot in timeslot2LessonSlot) {
       lessonSlot.parent = this;
     }
   }
 
-  factory SitTimetableDay.$11slots({
+  factory TimetableDay.$11slots({
     required int weekIndex,
     required Weekday weekday,
   }) {
-    return SitTimetableDay._internal(
+    return TimetableDay._internal(
       weekIndex,
       weekday,
-      List.generate(11, (index) => SitTimetableLessonSlot(lessons: <SitTimetableLessonPart>[])),
+      List.generate(11, (index) => TimetableLessonSlot(lessons: <TimetableLessonPart>[])),
     );
   }
 
   bool get isFree => slots.every((lessonSlot) => lessonSlot.lessons.isEmpty);
 
-  void add({required SitTimetableLessonPart lesson, required int at}) {
-    if (frozen) throw throw UnsupportedError("Cannot modify a frozen $SitTimetableDay.");
+  void add({required TimetableLessonPart lesson, required int at}) {
+    if (frozen) throw throw UnsupportedError("Cannot modify a frozen $TimetableDay.");
     assert(0 <= at && at < slots.length);
     if (0 <= at && at < slots.length) {
       final lessonSlot = slots[at];
@@ -182,25 +181,25 @@ class SitTimetableDay {
   }
 
   void clear() {
-    if (frozen) throw throw UnsupportedError("Cannot modify a frozen $SitTimetableDay.");
+    if (frozen) throw throw UnsupportedError("Cannot modify a frozen $TimetableDay.");
     for (final lessonSlot in slots) {
       lessonSlot.lessons.clear();
     }
   }
 
-  void replaceWith(SitTimetableDay other) {
+  void replaceWith(TimetableDay other) {
     // timeslot2LessonSlot
     setLessonSlots(other.cloneLessonSlots());
   }
 
-  void swap(SitTimetableDay other) {
+  void swap(TimetableDay other) {
     // timeslot2LessonSlot
     final $timeslot2LessonSlot = other.cloneLessonSlots();
     other.setLessonSlots(cloneLessonSlots());
     setLessonSlots($timeslot2LessonSlot);
   }
 
-  void setLessonSlots(Iterable<SitTimetableLessonSlot> v) {
+  void setLessonSlots(Iterable<TimetableLessonSlot> v) {
     slots.clear();
     slots.addAll(v);
 
@@ -212,12 +211,12 @@ class SitTimetableDay {
     }
   }
 
-  List<SitTimetableLessonSlot> cloneLessonSlots() {
-    final old2newLesson = <SitTimetableLesson, SitTimetableLesson>{};
+  List<TimetableLessonSlot> cloneLessonSlots() {
+    final old2newLesson = <TimetableLesson, TimetableLesson>{};
     final timeslots = List.of(
       slots.map(
         (lessonSlot) {
-          return SitTimetableLessonSlot(
+          return TimetableLessonSlot(
             lessons: List.of(
               lessonSlot.lessons.map(
                 (lessonPart) {
@@ -249,7 +248,7 @@ class SitTimetableDay {
   }
 
   /// At all lessons [layer]
-  Iterable<SitTimetableLessonPart> browseLessonsAt({required int layer}) sync* {
+  Iterable<TimetableLessonPart> browseLessonsAt({required int layer}) sync* {
     for (final lessonSlot in slots) {
       if (0 <= layer && layer < lessonSlot.lessons.length) {
         yield lessonSlot.lessons[layer];
@@ -274,17 +273,17 @@ class SitTimetableDay {
 }
 
 @CopyWith(skipFields: true)
-class SitTimetableLesson {
-  late SitTimetableDay parent;
+class TimetableLesson {
+  late TimetableDay parent;
 
   /// A lesson may last two or more time slots.
-  /// If current [SitTimetableLessonPart] is a part of the whole lesson, they all have the same [courseKey].
-  final SitCourse course;
+  /// If current [TimetableLessonPart] is a part of the whole lesson, they all have the same [courseKey].
+  final Course course;
 
   /// in timeslot order
-  final List<SitTimetableLessonPart> parts;
+  final List<TimetableLessonPart> parts;
 
-  SitTimetableLesson({
+  TimetableLesson({
     required this.course,
     required this.parts,
   });
@@ -293,10 +292,10 @@ class SitTimetableLesson {
   /// It's at least 1 timeslot.
   int get timeslotDuration => endIndex - startIndex + 1;
 
-  /// The start index of this lesson in a [SitTimetableWeek]
+  /// The start index of this lesson in a [TimetableWeek]
   int get startIndex => parts.first.index;
 
-  /// The end index of this lesson in a [SitTimetableWeek]
+  /// The end index of this lesson in a [TimetableWeek]
   int get endIndex => parts.last.index;
 
   DateTime get startTime => parts.first.startTime;
@@ -310,13 +309,13 @@ class SitTimetableLesson {
 }
 
 @CopyWith(skipFields: true)
-class SitTimetableLessonPart {
-  final SitTimetableLesson type;
+class TimetableLessonPart {
+  final TimetableLesson type;
 
-  /// The start index of this lesson in a [SitTimetableWeek]
+  /// The start index of this lesson in a [TimetableWeek]
   final int index;
 
-  late SitTimetableDay _dayCache = type.parent;
+  late TimetableDay _dayCache = type.parent;
 
   ({DateTime start, DateTime end})? _timeCache;
 
@@ -339,9 +338,9 @@ class SitTimetableLessonPart {
 
   DateTime get endTime => time.end;
 
-  SitCourse get course => type.course;
+  Course get course => type.course;
 
-  SitTimetableLessonPart({
+  TimetableLessonPart({
     required this.type,
     required this.index,
   });
@@ -350,11 +349,11 @@ class SitTimetableLessonPart {
   String toString() => "[$index] $type";
 }
 
-extension SitTimetable4EntityX on SitTimetable {
-  SitTimetableEntity resolve() {
+extension Timetable4EntityX on Timetable {
+  TimetableEntity resolve() {
     final days = List.generate(
       maxWeekLength * 7,
-      (index) => SitTimetableDay.$11slots(
+      (index) => TimetableDay.$11slots(
         weekIndex: index ~/ 7,
         weekday: Weekday.fromIndex(index % 7),
       ),
@@ -370,13 +369,13 @@ extension SitTimetable4EntityX on SitTimetable {
         );
         if (0 <= weekIndex && weekIndex < maxWeekLength) {
           final day = days[weekIndex * 7 + course.dayIndex];
-          final parts = <SitTimetableLessonPart>[];
-          final lesson = SitTimetableLesson(
+          final parts = <TimetableLessonPart>[];
+          final lesson = TimetableLesson(
             course: course,
             parts: parts,
           );
           for (int slot = timeslots.start; slot <= timeslots.end; slot++) {
-            final part = SitTimetableLessonPart(
+            final part = TimetableLessonPart(
               type: lesson,
               index: slot,
             );
@@ -389,54 +388,10 @@ extension SitTimetable4EntityX on SitTimetable {
         }
       }
     }
-    final entity = SitTimetableEntity(
+    final entity = TimetableEntity(
       type: this,
       days: days,
     );
-
-    void processPatch(TimetablePatchEntry patch) {
-      if (patch is TimetablePatchSet) {
-        for (final patch in patch.patches) {
-          processPatch(patch);
-        }
-      } else if (patch is TimetableRemoveDayPatch) {
-        for (final loc in patch.all) {
-          final day = loc.resolveDay(entity);
-          if (day != null) {
-            day.clear();
-          }
-        }
-      } else if (patch is TimetableMoveDayPatch) {
-        final source = patch.source;
-        final target = patch.target;
-        final sourceDay = source.resolveDay(entity);
-        final targetDay = target.resolveDay(entity);
-        if (sourceDay != null && targetDay != null) {
-          targetDay.replaceWith(sourceDay);
-          sourceDay.clear();
-        }
-      } else if (patch is TimetableCopyDayPatch) {
-        final source = patch.source;
-        final target = patch.target;
-        final sourceDay = source.resolveDay(entity);
-        final targetDay = target.resolveDay(entity);
-        if (sourceDay != null && targetDay != null) {
-          targetDay.replaceWith(sourceDay);
-        }
-      } else if (patch is TimetableSwapDaysPatch) {
-        final a = patch.a;
-        final b = patch.b;
-        final aDay = a.resolveDay(entity);
-        final bDay = b.resolveDay(entity);
-        if (aDay != null && bDay != null) {
-          aDay.swap(bDay);
-        }
-      }
-    }
-
-    for (final patch in patches) {
-      processPatch(patch);
-    }
 
     if (kDebugMode) {
       for (final day in entity.days) {

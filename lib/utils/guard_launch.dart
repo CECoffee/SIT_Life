@@ -1,7 +1,7 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
 import 'package:go_router/go_router.dart';
-import 'package:sit/utils/error.dart';
+import 'package:mimir/utils/error.dart';
 import 'package:universal_platform/universal_platform.dart';
 import 'package:url_launcher/url_launcher.dart';
 
@@ -13,7 +13,7 @@ Future<bool> guardLaunchUrl(BuildContext ctx, Uri url) async {
         return await launchUrl(url, mode: LaunchMode.externalApplication);
       }
       final target = Uri(
-        path: "/browser",
+        path: "/webview",
         queryParameters: {"url": url.toString()},
       ).toString();
       ctx.push(target);

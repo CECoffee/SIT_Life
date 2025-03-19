@@ -1,5 +1,5 @@
 import 'package:easy_localization/easy_localization.dart';
-import 'package:sit/lifecycle.dart';
+import 'package:mimir/lifecycle.dart';
 
 bool isLeapYear(int year) {
   if (year % 400 == 0) return true;
@@ -114,4 +114,14 @@ String formatDateSpan({
       return "${monthDay.format(from)}–${monthDay.format(to)}";
     }
   }
+}
+
+int dateTimeComparator(DateTime? timeA, DateTime? timeB) {
+  if (timeA == null || timeB == null) {
+    if (timeA != timeB) {
+      return timeA == null ? 1 : -1;
+    }
+    return 0;
+  }
+  return timeA.isAfter(timeB) ? 1 : -1;
 }

@@ -1,8 +1,9 @@
 import 'package:flutter/widgets.dart';
 import 'package:intl/intl.dart';
 import 'package:json_annotation/json_annotation.dart';
-import 'package:sit/l10n/extension.dart';
-import 'package:sit/school/utils.dart';
+import 'package:mimir/l10n/extension.dart';
+import 'package:mimir/school/utils.dart';
+import 'package:mimir/utils/date.dart';
 
 part 'exam.g.dart';
 
@@ -33,13 +34,18 @@ ExamTime? _parseTime(String s) {
   }
 }
 
-bool? _parseRetake(dynamic status) {
-  if (status == null) return null;
+bool _parseRetake(dynamic status) {
+  if (status == null) return false;
   return switch (status.toString()) {
     "是" => true,
     "否" => false,
-    _ => null,
+    _ => false,
   };
+}
+
+bool _parseDisqualified(dynamic note) {
+  if (note is! String) return false;
+  return note.contains("取消考试资格");
 }
 
 typedef ExamTime = ({DateTime start, DateTime end});
@@ -69,7 +75,10 @@ class ExamEntry {
 
   /// 是否重修
   @JsonKey()
-  final bool? isRetake;
+  final bool isRetake;
+
+  @JsonKey()
+  final bool disqualified;
 
   const ExamEntry({
     required this.courseName,
@@ -77,7 +86,8 @@ class ExamEntry {
     required this.campus,
     required this.time,
     required this.seatNumber,
-    required this.isRetake,
+    this.isRetake = false,
+    this.disqualified = false,
   });
 
   factory ExamEntry.fromJson(Map<String, dynamic> json) => _$ExamEntryFromJson(json);
@@ -92,6 +102,7 @@ class ExamEntry {
       time: _parseTime(json['kssj'] as String),
       seatNumber: _parseSeatNumber(json['zwh'] as String),
       isRetake: _parseRetake(json['cxbj']),
+      disqualified: _parseDisqualified(json['ksbz']),
     );
   }
 
@@ -104,19 +115,12 @@ class ExamEntry {
       "campus": campus,
       "seatNumber": seatNumber,
       "isRetake": isRetake,
+      "disqualified": disqualified,
     }.toString();
   }
 
-  static int comparator(ExamEntry a, ExamEntry b) {
-    final timeA = a.time;
-    final timeB = b.time;
-    if (timeA == null || timeB == null) {
-      if (timeA != timeB) {
-        return timeA == null ? 1 : -1;
-      }
-      return 0;
-    }
-    return timeA.start.isAfter(timeB.start) ? 1 : -1;
+  static int compareByTime(ExamEntry a, ExamEntry b) {
+    return dateTimeComparator(a.time?.start, b.time?.start);
   }
 }
 

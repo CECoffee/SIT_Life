@@ -1,17 +1,18 @@
+import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:rettulf/rettulf.dart';
-import 'package:sit/credentials/init.dart';
-import 'package:sit/design/widgets/common.dart';
-import 'package:sit/school/entity/school.dart';
-import 'package:sit/school/utils.dart';
-import 'package:sit/school/widgets/semester.dart';
-import 'package:sit/utils/error.dart';
+import 'package:mimir/credentials/init.dart';
+import 'package:mimir/design/widget/common.dart';
+import 'package:mimir/school/entity/school.dart';
+import 'package:mimir/school/utils.dart';
+import 'package:mimir/school/widget/semester.dart';
+import 'package:mimir/utils/error.dart';
 
 import '../entity/exam.dart';
 import '../i18n.dart';
 import '../init.dart';
-import '../widgets/exam.dart';
+import '../widget/exam.dart';
 
 class ExamArrangementListPage extends ConsumerStatefulWidget {
   const ExamArrangementListPage({super.key});
@@ -21,9 +22,10 @@ class ExamArrangementListPage extends ConsumerStatefulWidget {
 }
 
 class _ExamArrangementListPageState extends ConsumerState<ExamArrangementListPage> {
+  static SemesterInfo? _lastSemesterInfo;
   List<ExamEntry>? examList;
-  bool isFetching = false;
-  late SemesterInfo initial = ExamArrangeInit.storage.lastSemesterInfo ?? estimateCurrentSemester();
+  bool fetching = false;
+  late SemesterInfo initial = _lastSemesterInfo ?? estimateSemesterInfo();
   late SemesterInfo selected = initial;
 
   @override
@@ -36,7 +38,7 @@ class _ExamArrangementListPageState extends ConsumerState<ExamArrangementListPag
     if (!mounted) return;
     setState(() {
       examList = ExamArrangeInit.storage.getExamList(info);
-      isFetching = true;
+      fetching = true;
     });
     try {
       final examList = await ExamArrangeInit.service.fetchExamList(info);
@@ -45,21 +47,21 @@ class _ExamArrangementListPageState extends ConsumerState<ExamArrangementListPag
         if (!mounted) return;
         setState(() {
           this.examList = examList;
-          isFetching = false;
+          fetching = false;
         });
       }
     } catch (error, stackTrace) {
       handleRequestError(error, stackTrace);
       if (!mounted) return;
       setState(() {
-        isFetching = false;
+        fetching = false;
       });
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    final examList = this.examList;
+    final examList = this.examList?.sorted(ExamEntry.compareByTime).reversed.toList();
     final now = DateTime.now();
     return Scaffold(
       body: CustomScrollView(
@@ -83,27 +85,20 @@ class _ExamArrangementListPageState extends ConsumerState<ExamArrangementListPag
                 itemCount: examList.length,
                 itemBuilder: (ctx, i) {
                   final exam = examList[i];
-                  return Card.filled(
-                    child: ExamCardContent(
-                      exam,
-                      enableAddEvent: exam.time?.end.isAfter(now) ?? false,
-                    ),
-                  ).padH(6);
+                  return ExamCardContent(
+                    exam,
+                    enableAddEvent: exam.time?.end.isAfter(now) ?? false,
+                  ).inFilledCard().padH(6);
                 },
               ),
         ],
       ),
-      bottomNavigationBar: isFetching
-          ? const PreferredSize(
-              preferredSize: Size.fromHeight(4),
-              child: LinearProgressIndicator(),
-            )
-          : null,
+      floatingActionButton: !fetching ? null : const CircularProgressIndicator.adaptive(),
     );
   }
 
   Widget buildSemesterSelector() {
-    final credentials = ref.watch(CredentialsInit.storage.$oaCredentials);
+    final credentials = ref.watch(CredentialsInit.storage.oa.$credentials);
     return SemesterSelector(
       initial: initial,
       baseYear: getAdmissionYearFromStudentId(credentials?.account),
@@ -111,7 +106,7 @@ class _ExamArrangementListPageState extends ConsumerState<ExamArrangementListPag
         setState(() {
           selected = newSelection;
         });
-        ExamArrangeInit.storage.lastSemesterInfo = newSelection;
+        _lastSemesterInfo = newSelection;
         refresh(newSelection);
       },
     );

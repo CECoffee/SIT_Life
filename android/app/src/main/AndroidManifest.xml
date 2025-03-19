@@ -13,7 +13,9 @@
   <application
     android:icon="@mipmap/icon"
     android:label="@string/app_name"
-    android:networkSecurityConfig="@xml/network_security_config">
+    android:networkSecurityConfig="@xml/network_security_config"
+    android:enableOnBackInvokedCallback="true"
+  >
     <activity
       android:name=".MainActivity"
       android:configChanges="orientation|keyboardHidden|keyboard|screenSize|smallestScreenSize|locale|layoutDirection|fontScale|screenLayout|density|uiMode"
@@ -37,20 +39,51 @@
         <action android:name="android.intent.action.VIEW"/>
         <category android:name="android.intent.category.DEFAULT"/>
         <category android:name="android.intent.category.BROWSABLE"/>
-        <!-- Accepts URIs that begin with "https://mysit.life” -->
+        <!-- Accepts URIs that begin with "https://xiaoying.life” -->
         <data android:scheme="https"
-              android:host="mysit.life"/>
+              android:host="xiaoying.life"/>
       </intent-filter>
       <intent-filter android:label="Deep Links">
         <action android:name="android.intent.action.VIEW"/>
         <category android:name="android.intent.category.DEFAULT"/>
         <category android:name="android.intent.category.BROWSABLE"/>
-        <!-- Accepts URIs that begin with "sit-life://” -->
+        <!-- Accepts URIs that begin with "sitlife://” -->
+        <data android:scheme="sitlife"/>
+        <!--   for backwards support     -->
         <data android:scheme="sit-life"/>
         <!--   for backwards support     -->
         <data android:scheme="life.mysit"/>
       </intent-filter>
+      <!-- .timetable file-->
+      <intent-filter>
+        <action android:name="android.intent.action.VIEW"/>
+        <category android:name="android.intent.category.DEFAULT"/>
+        <category android:name="android.intent.category.BROWSABLE"/>
+        <category android:name="android.intent.category.OPENABLE"/>
+        <data
+          android:host="*"
+          android:mimeType="*/*"
+          android:pathPattern=".*\\.timetable"
+          android:scheme="content"
+        />
+      </intent-filter>
+      <!-- .json file-->
+      <intent-filter>
+        <action android:name="android.intent.action.VIEW"/>
+        <category android:name="android.intent.category.DEFAULT"/>
+        <category android:name="android.intent.category.BROWSABLE"/>
+        <category android:name="android.intent.category.OPENABLE"/>
+        <data
+          android:host="*"
+          android:mimeType="application/json"
+          android:scheme="content"
+        />
+      </intent-filter>
     </activity>
+    <activity
+      android:name="com.yalantis.ucrop.UCropActivity"
+      android:screenOrientation="portrait"
+      android:theme="@style/Theme.AppCompat.Light.NoActionBar"/>
     <!-- Don't delete the meta-data below.
          This is used by the Flutter tool to generate GeneratedPluginRegistrant.java -->
     <meta-data

@@ -3,14 +3,14 @@ import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:sit/design/adaptive/multiplatform.dart';
-import 'package:sit/design/widgets/app.dart';
-import 'package:sit/school/ywb/entity/application.dart';
-import 'package:sit/school/ywb/init.dart';
+import 'package:mimir/design/adaptive/multiplatform.dart';
+import 'package:mimir/design/widget/app.dart';
+import 'package:mimir/school/ywb/entity/application.dart';
+import 'package:mimir/school/ywb/init.dart';
 import 'package:rettulf/rettulf.dart';
 
 import "i18n.dart";
-import 'widgets/application.dart';
+import 'widget/application.dart';
 
 const _applicationLength = 2;
 
@@ -38,7 +38,7 @@ class _YwbAppCardState extends ConsumerState<YwbAppCard> {
           icon: const Icon(Icons.list_alt),
           label: i18n.seeAll.text(),
         ),
-        OutlinedButton.icon(
+        FilledButton.tonalIcon(
           onPressed: () {
             context.push("/ywb/mine");
           },

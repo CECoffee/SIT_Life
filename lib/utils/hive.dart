@@ -11,7 +11,7 @@ final _log = Logger(
     // Number of method calls to be displayed
     errorMethodCount: 8,
     // Print an emoji for each log message
-    printTime: true, // Should each log print contain a timestamp
+    dateTimeFormat: DateTimeFormat.onlyTimeAndSinceStart, // Should each log print contain a timestamp
   ),
 );
 
@@ -47,6 +47,26 @@ class BoxFieldNotifier<T> extends StateNotifier<T?> {
   @override
   void dispose() {
     listenable.removeListener(_refresh);
+    super.dispose();
+  }
+}
+
+class _BoxFieldNotifierWithDefault<T extends Object?> extends StateNotifier<T> {
+  final BoxFieldNotifier<T> getNullable;
+  final T Function() getDefault;
+  late RemoveListener remover;
+
+  _BoxFieldNotifierWithDefault(super._state, this.getNullable, this.getDefault) {
+    remover = getNullable.addListener(_refresh);
+  }
+
+  void _refresh(T? value) {
+    state = value ?? getDefault();
+  }
+
+  @override
+  void dispose() {
+    remover();
     super.dispose();
   }
 }
@@ -237,14 +257,6 @@ extension BoxProviderX on Box {
     });
   }
 
-  ChangeNotifierProvider streamChangeProvider({
-    BoxEventFilter? filter,
-  }) {
-    return ChangeNotifierProvider((ref) {
-      return BoxChangeStreamNotifier(watch(), filter);
-    });
-  }
-
   StateNotifierProvider<BoxFieldStreamNotifier<T>, T?> streamProvider<T>({
     required T? Function() initial,
     BoxEventFilter? filter,
@@ -254,11 +266,28 @@ extension BoxProviderX on Box {
     });
   }
 
+  StateNotifierProviderFamily<BoxFieldStreamNotifier<T>, T?, Arg> streamProviderFamily<T, Arg>({
+    required T? Function(Arg arg) initial,
+    required bool Function(BoxEvent event, Arg arg) filter,
+  }) {
+    return StateNotifierProvider.family<BoxFieldStreamNotifier<T>, T?, Arg>((ref, arg) {
+      return BoxFieldStreamNotifier(initial(arg), watch(), (event) => filter(event, arg));
+    });
+  }
+
+  ChangeNotifierProvider streamChangeProvider({
+    BoxEventFilter? filter,
+  }) {
+    return ChangeNotifierProvider((ref) {
+      return BoxChangeStreamNotifier(watch(), filter);
+    });
+  }
+
   ChangeNotifierProviderFamily<BoxChangeStreamNotifier, Arg> streamChangeProviderFamily<Arg>(
-    bool Function(BoxEvent event, Arg arg) argFilter,
+    bool Function(BoxEvent event, Arg arg) filter,
   ) {
     return ChangeNotifierProvider.family((ref, arg) {
-      return BoxChangeStreamNotifier(watch(), (event) => argFilter(event, arg));
+      return BoxChangeStreamNotifier(watch(), (event) => filter(event, arg));
     });
   }
 }

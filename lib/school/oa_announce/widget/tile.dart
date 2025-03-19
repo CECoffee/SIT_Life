@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import 'package:sit/design/widgets/tags.dart';
-import 'package:sit/l10n/extension.dart';
+import 'package:mimir/design/widget/tags.dart';
+import 'package:mimir/l10n/extension.dart';
+import 'package:mimir/school/utils.dart';
 import 'package:rettulf/rettulf.dart';
-import 'package:sit/school/class2nd/utils.dart';
 
 import '../entity/announce.dart';
 
@@ -28,7 +28,7 @@ class OaAnnounceTile extends StatelessWidget {
       subtitle: TagsGroup(record.departments + tags),
       trailing: context.formatYmdNum(record.dateTime).text(style: textTheme.bodySmall),
       onTap: () {
-        context.push("/oa-announce/details", extra: record);
+        context.push("/oa/announcement/details", extra: record);
       },
     );
   }

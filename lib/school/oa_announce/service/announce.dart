@@ -2,9 +2,9 @@ import 'package:beautiful_soup_dart/beautiful_soup.dart';
 import 'package:dio/dio.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:intl/intl.dart';
-import 'package:sit/init.dart';
-import 'package:sit/school/utils.dart';
-import 'package:sit/session/sso.dart';
+import 'package:mimir/init.dart';
+import 'package:mimir/school/utils.dart';
+import 'package:mimir/session/sso.dart';
 
 import '../entity/announce.dart';
 import '../entity/page.dart';
@@ -103,11 +103,7 @@ class OaAnnounceService {
 
   Future<OaAnnounceListPayload> getAnnounceList(OaAnnounceCat cat, int pageIndex) async {
     final response = await _session.request(
-      'https://myportal.sit.edu.cn/detach.portal?pageIndex=$pageIndex&groupid=&action=bulletinsMoreView&.ia=false&pageSize=&.pmn=view&.pen=${cat.internalId}',
-      options: Options(
-        method: "GET",
-      ),
-    );
+        'https://myportal.sit.edu.cn/detach.portal?pageIndex=$pageIndex&groupid=&action=bulletinsMoreView&.ia=false&pageSize=&.pmn=view&.pen=${cat.internalId}');
     final html = BeautifulSoup(response.data);
     return _parseAnnounceListPage(html.html!);
   }

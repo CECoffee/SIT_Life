@@ -1,12 +1,12 @@
 import 'package:dio/dio.dart';
-import 'package:sit/init.dart';
+import 'package:mimir/init.dart';
 
-import 'package:sit/session/ywb.dart';
+import 'package:mimir/session/ywb.dart';
 
 import '../entity/service.dart';
 
-const String _serviceFunctionList = 'https://xgfy.sit.edu.cn/app/public/queryAppManageJson';
-const String _serviceFunctionDetail = 'https://xgfy.sit.edu.cn/app/public/queryAppFormJson';
+const String _serviceFunctionList = '${YwbSession.base}/app/public/queryAppManageJson';
+const String _serviceFunctionDetail = '${YwbSession.base}/app/public/queryAppFormJson';
 
 class YwbServiceService {
   YwbSession get _session => Init.ywbSession;

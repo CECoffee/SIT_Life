@@ -2,28 +2,36 @@ import 'dart:io';
 
 import 'package:flutter/foundation.dart';
 import 'package:path/path.dart';
+import 'package:mimir/r.dart';
 import 'package:universal_platform/universal_platform.dart';
 
 class Files {
   const Files._();
 
-  static late final Directory temp;
+  static Future<void> init({
+    required Directory temp,
+    required Directory cache,
+    required Directory internal,
+    required Directory user,
+  }) async {
+    Files._temp = temp;
+    Files.cache = cache;
+    Files.internal = internal;
+    Files.user = user;
+    debugPrint("Cache dir: $cache");
+    debugPrint("Temp dir: $temp");
+    debugPrint("Internal dir: $internal");
+    debugPrint("User dir: $user");
+    Files.temp = TempDir._();
+  }
+
+  static late final Directory _temp;
+  static late final TempDir temp;
   static late final Directory cache;
   static late final Directory internal;
   static late final Directory user;
 
-  static Directory get screenshot => temp.subDir("screenshot");
-  static Directory get artifact => temp.subDir("artifact");
-
-  static const timetable = TimetableFiles();
-  static const oaAnnounce = OaAnnounceFiles();
-
-  static Future<void> init() async {
-    if (kIsWeb) return;
-    await screenshot.create(recursive: true);
-    await artifact.create(recursive: true);
-    await timetable.init();
-  }
+  static const oaAnnounce = OaAnnounceFiles._();
 }
 
 extension DirectoryX on Directory {
@@ -32,26 +40,25 @@ extension DirectoryX on Directory {
   Directory subDir(String p1, [String? p2, String? p3, String? p4]) => Directory(join(path, p1, p2, p3, p4));
 }
 
-class TimetableFiles {
-  const TimetableFiles();
-
-  File get screenshotFile => Files.screenshot.subFile("timetable.png");
-
-  File get backgroundFile => Files.user.subFile("timetable", "background");
-
-  // on MIUI, OpenFile can't open file under `Files.user`
-  Directory get calendarDir => (UniversalPlatform.isAndroid ? Files.cache : Files.user).subDir("timetable", "calendar");
-
-  Future<void> init() async {
-    await calendarDir.create(recursive: true);
-    await Files.user.subDir("timetable").create(recursive: true);
-  }
-}
-
 class OaAnnounceFiles {
-  const OaAnnounceFiles();
+  const OaAnnounceFiles._();
 
   Directory attachmentDir(String uuid) => Files.internal.subDir("attachment", uuid);
 
   Future<void> init() async {}
+}
+
+class TempDir {
+  TempDir._();
+
+  Directory? _realDir = UniversalPlatform.isWindows ? null : Files._temp;
+
+  Directory dir() {
+    // lazy create temp dir
+    return _realDir ??= Files._temp.createTempSync(R.appId);
+  }
+
+  File subFile(String p1, [String? p2, String? p3, String? p4]) => dir().subFile(p1, p2, p3, p4);
+
+  Directory subDir(String p1, [String? p2, String? p3, String? p4]) => dir().subDir(p1, p2, p3, p4);
 }

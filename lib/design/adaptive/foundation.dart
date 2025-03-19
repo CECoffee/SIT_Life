@@ -3,30 +3,42 @@ import 'dart:async';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:modal_bottom_sheet/modal_bottom_sheet.dart';
 import 'package:rettulf/rettulf.dart';
 
 import 'multiplatform.dart';
 
-const _kDialogAlpha = 0.89;
+class _CupertinoSheetAdapter extends StatelessWidget {
+  final WidgetBuilder builder;
+
+  const _CupertinoSheetAdapter({
+    required this.builder,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return [
+      builder(context).expanded(),
+      const SizedBox(height: 80),
+    ].column();
+  }
+}
 
 extension $BuildContextEx$ on BuildContext {
   Future<T?> showSheet<T>(
     WidgetBuilder builder, {
     bool dismissible = true,
-    bool useRootNavigator = false,
+    bool useRootNavigator = true,
   }) async {
     if (isCupertino) {
-      return await showCupertinoModalBottomSheet<T>(
+      return await showCupertinoSheet(
         context: this,
-        builder: builder,
-        animationCurve: Curves.fastEaseInToSlowEaseOut,
-        isDismissible: dismissible,
-        useRootNavigator: useRootNavigator,
+        pageBuilder: (ctx) => _CupertinoSheetAdapter(builder: builder),
       );
     } else {
       // dismissible not working with CustomScrollView
       // see https://github.com/flutter/flutter/issues/36283
+      var enableDrag = dismissible;
+      var showDragHandle = enableDrag;
       return await showModalBottomSheet<T>(
         context: this,
         builder: builder,
@@ -34,7 +46,8 @@ extension $BuildContextEx$ on BuildContext {
         isScrollControlled: true,
         useSafeArea: true,
         // It's a workaround
-        showDragHandle: true,
+        showDragHandle: showDragHandle,
+        enableDrag: enableDrag,
         useRootNavigator: useRootNavigator,
       );
     }
@@ -75,13 +88,13 @@ class $Dialog$ extends StatelessWidget {
 
   /// Highlight the title
   final bool serious;
-  final WidgetBuilder make;
+  final WidgetBuilder desc;
 
   const $Dialog$({
     super.key,
     this.title,
     required this.primary,
-    required this.make,
+    required this.desc,
     this.secondary,
     this.serious = false,
   });
@@ -93,7 +106,7 @@ class $Dialog$ extends StatelessWidget {
     if (isCupertino) {
       dialog = CupertinoAlertDialog(
         title: title?.text(style: TextStyle(fontWeight: FontWeight.w600, color: serious ? context.$red$ : null)),
-        content: make(context),
+        content: desc(context),
         actions: [
           if (second != null)
             CupertinoDialogAction(
@@ -117,9 +130,9 @@ class $Dialog$ extends StatelessWidget {
     } else {
       // For other platform
       dialog = AlertDialog(
-        backgroundColor: context.theme.dialogBackgroundColor.withOpacity(_kDialogAlpha),
+        backgroundColor: context.theme.dialogTheme.backgroundColor,
         title: title?.text(style: TextStyle(fontWeight: FontWeight.w600, color: serious ? context.$red$ : null)),
-        content: make(context),
+        content: desc(context),
         actions: [
           if (second != null)
             TextButton(
@@ -288,5 +301,5 @@ const Border _kDefaultRoundedBorder = Border(
 );
 
 extension ColorEx on BuildContext {
-  Color get $red$ => isCupertino ? CupertinoDynamicColor.resolve(CupertinoColors.systemRed, this) : Colors.redAccent;
+  Color get $red$ => isCupertino ? CupertinoColors.destructiveRed : Colors.redAccent;
 }

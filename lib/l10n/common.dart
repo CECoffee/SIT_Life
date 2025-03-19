@@ -15,6 +15,10 @@ mixin class CommonI18nMixin {
 
   String get refresh => "refresh".tr();
 
+  String get update => "update".tr();
+
+  String get sync => "sync".tr();
+
   String get close => "close".tr();
 
   String get submit => "submit".tr();
@@ -83,35 +87,19 @@ mixin class CommonI18nMixin {
 
   String get unspecified => "unspecified".tr();
 
-  String get shareQrCode => "shareQrCode".tr();
-
   String get add => "add".tr();
 
   String get rename => "rename".tr();
+
+  String get enter => "enter".tr();
+
+  String get create => "create".tr();
+
+  String get troubleshoot => "troubleshoot".tr();
 }
 
 class CommonI18n with CommonI18nMixin {
   const CommonI18n();
-}
-
-class NetworkI18n {
-  const NetworkI18n();
-
-  static const ns = "network";
-
-  String get error => "$ns.error".tr();
-
-  String get ipAddress => "$ns.ipAddress".tr();
-
-  String get connectionTimeoutError => "$ns.connectionTimeoutError".tr();
-
-  String get connectionTimeoutErrorDesc => "$ns.connectionTimeoutErrorDesc".tr();
-
-  String get openToolBtn => "$ns.openToolBtn".tr();
-
-  String get noAccessTip => "$ns.noAccessTip".tr();
-
-  String get untitled => "$ns.untitled".tr();
 }
 
 class UnitI18n {
