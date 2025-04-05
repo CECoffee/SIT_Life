@@ -1,12 +1,10 @@
 <div align="center">
 
-# Xiao Ying
+# Xiao Ying 小应生活
 
 <img src="assets/icon.svg" alt="Icon" width="256">
 
-### A multi-platform app for SIT students.
-
-*Android, iOS, Windows, macOS, and Linux*
+### 校园生活就用小应生活！
 
 ### Source License
 
